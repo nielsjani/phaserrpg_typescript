@@ -1,10 +1,10 @@
 namespace Classes {
     export class Player extends Phaser.Sprite {
 
-        idlePoses: any;
-        lastDirection: any;
+        idlePoses: any[];
+        lastDirection: string;
 
-        constructor(public state: any,public x: any,public y: any,public imageRef: any) {
+        constructor(public state: States.GameState,public x: number,public y: number,public imageRef: string) {
             super(state.game, x, y, imageRef);
 
             this.state = state;

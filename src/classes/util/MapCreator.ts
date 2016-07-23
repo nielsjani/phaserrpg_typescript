@@ -24,13 +24,13 @@ namespace Classes.Util {
             state.items = state.add.group();
             state.items.enableBody = true;
             let itemsFromJson = this.getItems(state);
-            itemsFromJson.forEach((item:any) => {
+            itemsFromJson.forEach((item:Classes.Item) => {
                 this.addToGroup(item, state.items);
             })
         }
 
         getItems(state: GameState) {
-            let items: any = [];
+            let items: Classes.Item[] = [];
             state.map.objects["itemlayer"].forEach((item:any) => {
                 if (item.properties.type === "text") {
                     items.push(new TextItem(item.x * 3, (item.y - state.map.tileHeight) * 3, item.properties.sprite, item.properties.text));
@@ -42,7 +42,7 @@ namespace Classes.Util {
             return items;
         }
 
-        addToGroup(item:any, group:any) {
+        addToGroup(item:Classes.Item, group:Phaser.Group) {
             let sprite = group.create(item.x, item.y, item.sprite);
             sprite.customProperties = item.getCustomProperties();
             sprite.body.immovable = sprite.customProperties.collides;

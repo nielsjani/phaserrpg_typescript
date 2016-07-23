@@ -1,6 +1,6 @@
 namespace Classes {
     import GameState = States.GameState;
-    export class DoorItem {
+    export class DoorItem implements Classes.Item{
         constructor(public x:number, public y:number, public sprite: string, public map: string, public playerx: number, public playery: number, public tileset: string) {
             this.x = x;
             this.y = y;

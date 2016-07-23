@@ -5,20 +5,19 @@ namespace States {
     import TextDisplay = Classes.TextDisplay;
 
     export class GameState extends Phaser.State {
-        mapname:any;
-        tileset:any;
-        cursors:any;
-        spacebar:any;
+        mapname:string;
+        tileset:string;
+        cursors:Phaser.CursorKeys;
+        spacebar:Phaser.Key;
         map:any;
-        groundLayer:any;
-        collisionLayer:any;
-        player:any;
-        items:any;
+        groundLayer:Phaser.TilemapLayer;
+        collisionLayer:Phaser.TilemapLayer;
+        player:Classes.Player;
+        items:Phaser.Group;
         displayingText: boolean = false;
         currentlyDisplayedText: TextDisplay;
 
-
-        init(mapname:any, tileset:any) {
+        init(mapname:string, tileset:string) {
             this.mapname = mapname;
             this.tileset = tileset;
         }

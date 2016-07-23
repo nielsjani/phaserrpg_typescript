@@ -2,10 +2,10 @@
 
 namespace States {
     export class LoadState extends Phaser.State {
-        map: any;
-        tileset: any;
+        map: string;
+        tileset: string;
 
-        init(map: any, tileset: any) {
+        init(map: string, tileset: string) {
             this.map = map;
             this.tileset = tileset;
 

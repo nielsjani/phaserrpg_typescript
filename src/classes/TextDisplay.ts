@@ -2,8 +2,8 @@ namespace Classes {
     import GameState = States.GameState;
     export class TextDisplay extends Phaser.Text {
 
-        textToDisplay: any;
-        textDisplayingPart: any;
+        textToDisplay: any[];
+        textDisplayingPart: number;
 
         constructor(public state: GameState, public x:number ,public  y: number, public text: string) {
             super(state.game, x, y, text, TextDisplay.getStyle());
