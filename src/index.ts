@@ -10,7 +10,7 @@ class Game extends Phaser.Game {
         super(800, 600, Phaser.AUTO, 'content', null);
         this.state.add("LoadState", States.LoadState, false);
         this.state.add("GameState", States.GameState, false);
-        this.state.start('LoadState', false, false, "map1", "pokemon1");
+        this.state.start('LoadState', false, false, "mymap1", "MyTileset");
     }
 }
 

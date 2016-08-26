@@ -6,14 +6,12 @@ var States;
             this.tileset = tileset;
         }
         preload() {
-            this.load.tilemap("map1", "images/maps/map1.json", null, Phaser.Tilemap.TILED_JSON);
-            this.load.tilemap("map2", "images/maps/map2.json", null, Phaser.Tilemap.TILED_JSON);
-            this.load.image("pokemon1", "images/tilesets/tileset1.png");
-            this.load.image("tileset1", "images/tilesets/tileset1.png");
-            this.load.spritesheet("player", "images/spritesheets/player_transp.png", 14, 20, 12, 0, 2);
-            this.load.image("textboard", "images/items/textboard.png");
-            this.load.image("door", "images/items/door.png");
-            this.load.image("invisibleBlock", "images/items/invisibleBlock.png");
+            this.load.tilemap("mymap1", "images/maps/mymap1.json", null, Phaser.Tilemap.TILED_JSON);
+            this.load.tilemap("mymap2", "images/maps/mymap2.json", null, Phaser.Tilemap.TILED_JSON);
+            this.load.image("MyTileset", "images/tilesets/MyTileset.png");
+            this.load.spritesheet("player", "images/spritesheets/player_transp.png", 42, 60, 12, 0, 6);
+            this.load.image("warningsign", "images/items/warningsign.png");
+            this.load.image("portal", "images/items/portal.png");
         }
         create() {
             this.game.state.start("GameState", true, false, this.map, this.tileset);
@@ -35,8 +33,6 @@ var Classes;
                 state.collisionLayer = state.map.createLayer("collisionlayer");
                 this.addItems(state);
                 state.map.setCollisionBetween(1, 100000, true, 'collisionlayer');
-                state.groundLayer.setScale(3);
-                state.collisionLayer.setScale(3);
                 state.groundLayer.resizeWorld();
                 state.collisionLayer.resizeWorld();
             }
@@ -52,10 +48,10 @@ var Classes;
                 let items = [];
                 state.map.objects["itemlayer"].forEach((item) => {
                     if (item.properties.type === "text") {
-                        items.push(new Classes.TextItem(item.x * 3, (item.y - state.map.tileHeight) * 3, item.properties.sprite, item.properties.text));
+                        items.push(new Classes.TextItem(item.x, (item.y - state.map.tileHeight), item.properties.sprite, item.properties.text));
                     }
                     if (item.properties.type === "door") {
-                        items.push(new Classes.DoorItem(item.x * 3, (item.y - state.map.tileHeight) * 3, item.properties.sprite, item.properties.map, item.properties.x, item.properties.y, item.properties.tileset));
+                        items.push(new Classes.DoorItem(item.x, (item.y - state.map.tileHeight), item.properties.sprite, item.properties.map, item.properties.x, item.properties.y, item.properties.tileset));
                     }
                 });
                 return items;
@@ -109,7 +105,7 @@ class Game extends Phaser.Game {
         super(800, 600, Phaser.AUTO, 'content', null);
         this.state.add("LoadState", States.LoadState, false);
         this.state.add("GameState", States.GameState, false);
-        this.state.start('LoadState', false, false, "map1", "pokemon1");
+        this.state.start('LoadState', false, false, "mymap1", "MyTileset");
     }
 }
 new Game();
@@ -163,7 +159,6 @@ var Classes;
             this.animations.add('down', [6, 7, 8], 10, true);
             this.animations.add('up', [9, 10, 11], 10, true);
             this.state.physics.arcade.enable(this);
-            this.scale.setTo(3);
             this.createIdlePoses();
         }
         createIdlePoses() {
@@ -216,7 +211,7 @@ var Classes;
             this.y = y;
             this.text = text;
             this.setText(this.getFirstTextChunk(text));
-            this.setTextBounds(25, state.camera.y + (state.camera.height - 150), 800, 100);
+            this.setTextBounds(state.camera.x + 25, state.camera.y + (state.camera.height - 150), 800, 100);
         }
         updateTextbox() {
             this.setText(this.textToDisplay[this.textDisplayingPart + 1]);

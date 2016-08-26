@@ -8,7 +8,7 @@ namespace Classes {
         constructor(public state: GameState, public x:number ,public  y: number, public text: string) {
             super(state.game, x, y, text, TextDisplay.getStyle());
             this.setText(this.getFirstTextChunk(text));
-            this.setTextBounds(25, state.camera.y + (state.camera.height - 150), 800, 100);
+            this.setTextBounds(state.camera.x  +25, state.camera.y + (state.camera.height - 150), 800, 100);
         }
 
         updateTextbox() {

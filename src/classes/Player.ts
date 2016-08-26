@@ -1,7 +1,7 @@
 namespace Classes {
     export class Player extends Phaser.Sprite {
 
-        idlePoses: any[];
+        idlePoses: Map<string, number>;
         lastDirection: string;
 
         constructor(public state: States.GameState,public x: number,public y: number,public imageRef: string) {
@@ -14,9 +14,6 @@ namespace Classes {
             this.animations.add('down', [6, 7, 8], 10, true);
             this.animations.add('up', [9, 10, 11], 10, true);
             this.state.physics.arcade.enable(this);
-
-            this.scale.setTo(3);
-
             this.createIdlePoses();
         }
 
