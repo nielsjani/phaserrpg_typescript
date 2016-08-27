@@ -90,6 +90,12 @@ function copyPhaser() {
 
 }
 
+function copyNodeModules() {
+    return gulp.src("./node_modules/*")
+        .pipe(gulp.dest(SCRIPTS_PATH+"/node_modules"));
+
+}
+
 /**
  * Transforms ES2015 code into ES5 code.
  * Optionally: Creates a sourcemap file 'game.js.map' for debugging.
@@ -100,32 +106,6 @@ function copyPhaser() {
  * but have different task dependencies.
  */
 function build() {
-
-    //var sourcemapPath = SCRIPTS_PATH + '/' + OUTPUT_FILE + '.map';
-    //logBuildMode();
-    //
-    //return browserify({
-    //    paths: [path.join(__dirname, 'src')],
-    //    entries: ENTRY_FILE,
-    //    debug: true,
-    //    transform: [
-    //        [
-    //            babelify, {
-    //            presets: ["es2015"]
-    //        }
-    //        ]
-    //    ]
-    //})
-    //    .transform(babelify)
-    //    .bundle().on('error', function(error) {
-    //        gutil.log(gutil.colors.red('[Build Error]', error.message));
-    //        this.emit('end');
-    //    })
-    //    .pipe(gulpif(!isProduction(), exorcist(sourcemapPath)))
-    //    .pipe(source(OUTPUT_FILE))
-    //    .pipe(buffer())
-    //    .pipe(gulpif(isProduction(), uglify()))
-    //    .pipe(gulp.dest(SCRIPTS_PATH));
     return gulp.src(DIST_PATH + "game.js")
         .pipe(gulp.dest(SCRIPTS_PATH));
 
@@ -160,7 +140,8 @@ function serve() {
 gulp.task('cleanBuild', cleanBuild);
 gulp.task('copyStatic', ['cleanBuild'], copyStatic);
 gulp.task('copyPhaser', ['copyStatic'], copyPhaser);
-gulp.task('build', ['copyPhaser'], build);
+gulp.task('copyNodeModules',  copyNodeModules);
+gulp.task('build', ['copyPhaser', 'copyNodeModules'], build);
 gulp.task('fastBuild', build);
 gulp.task('serve', ['build'], serve);
 gulp.task('watch-js', ['fastBuild'], browserSync.reload); // Rebuilds and reloads the project when executed.
