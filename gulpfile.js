@@ -108,7 +108,8 @@ function templates() {
             templateHeader: "export default $templateCache => {\n\"ngInject\";\n",
             templateFooter: "\n};",
             transformUrl(url) {
-                return url.substring(url.indexOf("app") + 4);
+                var pathpart = "phaserRpgTypescript";
+                return url.substring(url.indexOf(pathpart) + pathpart.length +1);
             }
         }));
 }
