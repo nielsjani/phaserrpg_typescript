@@ -18,6 +18,7 @@ var ngAnnotate = require("gulp-ng-annotate");
 var rename = require("gulp-rename");
 var concat = require("gulp-concat");
 var babel = require("gulp-babel");
+var gnf = require('gulp-npm-files');
 
 var PHASER_PATH = './node_modules/phaser/build/';
 var DIST_PATH = './src/dist/';
@@ -38,11 +39,11 @@ function isProduction() {
 
 function cleanBuild() {
     if (!keepFiles) {
-        del(['build/scripts/node_modules']);
         del(['build/**/*.*']);
     } else {
         keepFiles = false;
     }
+    return;
 }
 
 function copyStatic() {
@@ -109,31 +110,14 @@ function templates() {
             templateFooter: "\n};",
             transformUrl(url) {
                 var pathpart = "phaserRpgTypescript";
-                return url.substring(url.indexOf(pathpart) + pathpart.length +1);
+                return url.substring(url.indexOf(pathpart) + pathpart.length + 1);
             }
         }));
 }
 
-function copyNodeModules(done) {
-    var modules_to_copy = [
-        "./node_modules/**/dist/jquery.min.js",
-        "./node_modules/**/angular.min.js",
-        "./node_modules/**/angular-locale_nl-be.js",
-        "./node_modules/**/angular-animate.min.js",
-        "./node_modules/**/angular-resource.min.js",
-        "./node_modules/**/angular-cookies.min.js",
-        "./node_modules/**/release/angular-ui-router.min.js",
-        "./node_modules/**/ui-bootstrap-tpls.min.js",
-        "./node_modules/**/dist/polyfill.min.js",
-        "./node_modules/**/dist/es6-module-loader.js",
-        "./node_modules/**/dist/system.js"
-        ];
-
-    gulp.src(modules_to_copy)
-        .pipe(gulp.dest(SCRIPTS_PATH + "/node_modules"));
-
-    return copyApp();
-
+function copyNodeModules() {
+    return gulp.src(gnf(), {base: './'})
+        .pipe(gulp.dest(SCRIPTS_PATH));
 }
 
 function build() {
@@ -164,11 +148,10 @@ function serve() {
 }
 
 gulp.task('cleanBuild', cleanBuild);
-gulp.task('copyStatic', ['cleanBuild'], copyStatic);
-gulp.task('copyPhaser', ['copyStatic'], copyPhaser);
 gulp.task('copyNodeModules', copyNodeModules);
-gulp.task('copyApp', copyApp);
-gulp.task('build', ['copyPhaser', 'copyNodeModules'], build);
+gulp.task('copyApp', ['copyNodeModules'], copyApp);
+gulp.task('copyStatic', ['copyApp'], copyStatic);
+gulp.task('build', ['cleanBuild', 'copyStatic'], build);
 gulp.task('fastBuild', build);
 gulp.task('serve', ['build'], serve);
 gulp.task('watch-js', ['fastBuild'], browserSync.reload); // Rebuilds and reloads the project when executed.
