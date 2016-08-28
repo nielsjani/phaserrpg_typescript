@@ -7,7 +7,22 @@
 </head>
 <body>
 	<div id="content"></div>
+	<script type="text/javascript" src="scripts/node_modules/jquery/dist/jquery.min.js"></script>
+	<script type="text/javascript" src="scripts/node_modules/angular/angular.min.js"></script>
+	<script type="text/javascript" src="scripts/node_modules/angular-i18n/angular-locale_nl-be.js"></script>
+	<script type="text/javascript" src="scripts/node_modules/angular-animate/angular-animate.min.js"></script>
+	<script type="text/javascript" src="scripts/node_modules/angular-resource/angular-resource.min.js"></script>
+	<script type="text/javascript" src="scripts/node_modules/angular-cookies/angular-cookies.min.js"></script>
+	<script type="text/javascript" src="scripts/node_modules/angular-ui-router/release/angular-ui-router.min.js"></script>
+	<script type="text/javascript" src="scripts/node_modules/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+	<script type="text/javascript" src="scripts/node_modules/babel-polyfill/dist/polyfill.min.js"></script>
+	<script type="text/javascript" src="scripts/node_modules/es6-module-loader/dist/es6-module-loader.js"></script>
+	<script type="text/javascript" src="scripts/node_modules/systemjs/dist/system.js"></script>
+
 	<script src="scripts/phaser.min.js"></script>
 	<script src="scripts/game.js"></script>
+	<script src="scripts/app.min.js"></script>
+
+	<script type="text/javascript">System.import("app.bootstrap");</script>
 </body>
 </html>

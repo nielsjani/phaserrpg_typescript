@@ -10,6 +10,8 @@
     "target": "es6"
   },
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "node_modules/bs-recipes/recipes/webpack.typescript/src/main.ts",
+    "build"
   ]
 }

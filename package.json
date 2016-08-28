@@ -85,16 +85,6 @@
       "main": [
         "./angular-locale_nl-be.js"
       ]
-    },
-    "es6-module-loader": {
-      "main": [
-        "./dist/es6-module-loader.src.js"
-      ]
-    },
-    "system.js": {
-      "main": [
-        "./dist/system.src.js"
-      ]
     }
   }
 }

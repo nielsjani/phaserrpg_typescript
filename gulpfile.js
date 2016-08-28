@@ -2,77 +2,54 @@ var del = require('del');
 var gulp = require('gulp');
 var path = require('path');
 var argv = require('yargs').argv;
-var gutil = require('gulp-util');
 var source = require('vinyl-source-stream');
 var buffer = require('gulp-buffer');
 var uglify = require('gulp-uglify');
-var gulpif = require('gulp-if');
 var exorcist = require('exorcist');
 var babelify = require('babelify');
 var browserify = require('browserify');
 var browserSync = require('browser-sync');
+var htmlmin = require("gulp-htmlmin");
+var templateCache = require("gulp-angular-templatecache");
+var addStream = require("add-stream");
+var sourceMaps = require("gulp-sourcemaps");
+var plumber = require("gulp-plumber");
+var ngAnnotate = require("gulp-ng-annotate");
+var rename = require("gulp-rename");
+var concat = require("gulp-concat");
+var babel = require("gulp-babel");
 
-/**
- * Using different folders/file names? Change these constants:
- */
 var PHASER_PATH = './node_modules/phaser/build/';
 var DIST_PATH = './src/dist/';
 var BUILD_PATH = './build';
 var SCRIPTS_PATH = BUILD_PATH + '/scripts';
 var SOURCE_PATH = './src';
 var STATIC_PATH = './static';
+var APP_PATH = './app/**/*.js';
+var APP_HTML_PATH = './app/**/*.html';
 var ENTRY_FILE = SOURCE_PATH + '/index.js';
 var OUTPUT_FILE = 'game.js';
 
 var keepFiles = false;
 
-/**
- * Simple way to check for development/production mode.
- */
 function isProduction() {
     return argv.production;
 }
 
-/**
- * Logs the current build mode on the console.
- */
-function logBuildMode() {
-
-    if (isProduction()) {
-        gutil.log(gutil.colors.green('Running production build...'));
-    } else {
-        gutil.log(gutil.colors.yellow('Running development build...'));
-    }
-
-}
-
-/**
- * Deletes all content inside the './build' folder.
- * If 'keepFiles' is true, no files will be deleted. This is a dirty workaround since we can't have
- * optional task dependencies :(
- * Note: keepFiles is set to true by gulp.watch (see serve()) and reseted here to avoid conflicts.
- */
 function cleanBuild() {
     if (!keepFiles) {
+        del(['build/scripts/node_modules']);
         del(['build/**/*.*']);
     } else {
         keepFiles = false;
     }
 }
 
-/**
- * Copies the content of the './static' folder into the '/build' folder.
- * Check out README.md for more info on the '/static' folder.
- */
 function copyStatic() {
     return gulp.src(STATIC_PATH + '/**/*')
         .pipe(gulp.dest(BUILD_PATH));
 }
 
-/**
- * Copies required Phaser files from the './node_modules/Phaser' folder into the './build/scripts' folder.
- * This way you can call 'npm update', get the lastest Phaser version and use it on your project with ease.
- */
 function copyPhaser() {
 
     var srcList = ['phaser.min.js'];
@@ -81,7 +58,7 @@ function copyPhaser() {
         srcList.push('phaser.map', 'phaser.js');
     }
 
-    srcList = srcList.map(function(file) {
+    srcList = srcList.map(function (file) {
         return PHASER_PATH + file;
     });
 
@@ -90,31 +67,80 @@ function copyPhaser() {
 
 }
 
-function copyNodeModules() {
-    return gulp.src("./node_modules/*")
-        .pipe(gulp.dest(SCRIPTS_PATH+"/node_modules"));
+function copyApp() {
+    return gulp
+        .src(APP_PATH)
+        .pipe(addStream.obj(templates()))
+        .pipe(plumber())
+        .pipe(sourceMaps.init())
+        .pipe(babel({
+            moduleIds: true,
+            compact: true,
+            presets: ["es2015"],
+            plugins: ["transform-es2015-modules-systemjs"]
+        }))
+        .pipe(concat("app.js"))
+        .pipe(ngAnnotate())
+        .pipe(uglify())
+        .pipe(rename({
+            suffix: ".min"
+        }))
+        .pipe(sourceMaps.write("./"))
+        .pipe(gulp.dest(SCRIPTS_PATH))
+        ;
+}
+
+function templates() {
+    return gulp
+        .src(APP_HTML_PATH, {base: "app"})
+        .pipe(htmlmin({
+            removeComments: true,
+            collapseWhitespace: true,
+            conservativeCollapse: true,
+            preserveLineBreaks: true,
+            collapseBooleanAttributes: true,
+            removeEmptyAttributes: true,
+            removeTagWhitespace: true,
+            keepClosingSlash: true,
+            quoteCharacter: "\""
+        }))
+        .pipe(templateCache("app.templates.run.js", {
+            templateHeader: "export default $templateCache => {\n\"ngInject\";\n",
+            templateFooter: "\n};",
+            transformUrl(url) {
+                return url.substring(url.indexOf("app") + 4);
+            }
+        }));
+}
+
+function copyNodeModules(done) {
+    var modules_to_copy = [
+        "./node_modules/**/dist/jquery.min.js",
+        "./node_modules/**/angular.min.js",
+        "./node_modules/**/angular-locale_nl-be.js",
+        "./node_modules/**/angular-animate.min.js",
+        "./node_modules/**/angular-resource.min.js",
+        "./node_modules/**/angular-cookies.min.js",
+        "./node_modules/**/release/angular-ui-router.min.js",
+        "./node_modules/**/ui-bootstrap-tpls.min.js",
+        "./node_modules/**/dist/polyfill.min.js",
+        "./node_modules/**/dist/es6-module-loader.js",
+        "./node_modules/**/dist/system.js"
+        ];
+
+    gulp.src(modules_to_copy)
+        .pipe(gulp.dest(SCRIPTS_PATH + "/node_modules"));
+
+    return copyApp();
 
 }
 
-/**
- * Transforms ES2015 code into ES5 code.
- * Optionally: Creates a sourcemap file 'game.js.map' for debugging.
- *
- * In order to avoid copying Phaser and Static files on each build,
- * I've abstracted the build logic into a separate function. This way
- * two different tasks (build and fastBuild) can use the same logic
- * but have different task dependencies.
- */
 function build() {
     return gulp.src(DIST_PATH + "game.js")
         .pipe(gulp.dest(SCRIPTS_PATH));
 
 }
 
-/**
- * Starts the Browsersync server.
- * Watches for file changes in the 'src' folder.
- */
 function serve() {
 
     var options = {
@@ -130,28 +156,21 @@ function serve() {
     gulp.watch(SOURCE_PATH + '/**/*.js', ['watch-js']);
 
     // Watches for changes in files inside the './static' folder. Also sets 'keepFiles' to true (see cleanBuild()).
-    gulp.watch(STATIC_PATH + '/**/*', ['watch-static']).on('change', function() {
+    gulp.watch(STATIC_PATH + '/**/*', ['watch-static']).on('change', function () {
         keepFiles = true;
     });
 
 }
 
-
 gulp.task('cleanBuild', cleanBuild);
 gulp.task('copyStatic', ['cleanBuild'], copyStatic);
 gulp.task('copyPhaser', ['copyStatic'], copyPhaser);
-gulp.task('copyNodeModules',  copyNodeModules);
+gulp.task('copyNodeModules', copyNodeModules);
+gulp.task('copyApp', copyApp);
 gulp.task('build', ['copyPhaser', 'copyNodeModules'], build);
 gulp.task('fastBuild', build);
 gulp.task('serve', ['build'], serve);
 gulp.task('watch-js', ['fastBuild'], browserSync.reload); // Rebuilds and reloads the project when executed.
 gulp.task('watch-static', ['copyPhaser'], browserSync.reload);
 
-/**
- * The tasks are executed in the following order:
- * 'cleanBuild' -> 'copyStatic' -> 'copyPhaser' -> 'build' -> 'serve'
- *
- * Read more about task dependencies in Gulp:
- * https://medium.com/@dave_lunny/task-dependencies-in-gulp-b885c1ab48f0
- */
 gulp.task('default', ['serve']);
