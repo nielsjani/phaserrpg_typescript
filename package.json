@@ -63,17 +63,18 @@
     "yargs": "^4.6.0"
   },
   "dependencies": {
-    "phaser": "^2.4.7",
-    "babel-polyfill": "6.7.2",
     "angular": "1.5.2",
-    "angular-i18n": "1.5.2",
     "angular-animate": "1.5.2",
-    "angular-resource": "1.5.2",
-    "angular-cookies": "1.5.2",
-    "angular-ui-router": "0.2.18",
     "angular-bootstrap": "0.12.2",
+    "angular-cookies": "1.5.2",
+    "angular-i18n": "1.5.2",
+    "angular-resource": "1.5.2",
+    "angular-ui-router": "0.2.18",
+    "babel-polyfill": "6.7.2",
+    "bootstrap": "~3.3.7",
     "es6-module-loader": "0.17.11",
     "jquery": "2.2.2",
+    "phaser": "^2.4.7",
     "systemjs": "0.19.37"
   },
   "babel": {

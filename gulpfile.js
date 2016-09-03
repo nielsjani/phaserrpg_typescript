@@ -132,7 +132,7 @@ function serve() {
         server: {
             baseDir: BUILD_PATH
         },
-        open: false // Change it to true if you wish to allow Browsersync to open a browser window.
+        open: true // Change it to true if you wish to allow Browsersync to open a browser window.
     };
 
     browserSync(options);
@@ -155,6 +155,6 @@ gulp.task('build', ['cleanBuild', 'copyStatic'], build);
 gulp.task('fastBuild', build);
 gulp.task('serve', ['build'], serve);
 gulp.task('watch-js', ['fastBuild'], browserSync.reload); // Rebuilds and reloads the project when executed.
-gulp.task('watch-static', ['copyPhaser'], browserSync.reload);
+gulp.task('watch-static', browserSync.reload);
 
 gulp.task('default', ['serve']);
