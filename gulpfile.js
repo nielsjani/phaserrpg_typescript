@@ -1,7 +1,6 @@
 var del = require('del');
 var gulp = require('gulp');
 var path = require('path');
-var argv = require('yargs').argv;
 var source = require('vinyl-source-stream');
 var buffer = require('gulp-buffer');
 var uglify = require('gulp-uglify');
@@ -20,7 +19,6 @@ var concat = require("gulp-concat");
 var babel = require("gulp-babel");
 var gnf = require('gulp-npm-files');
 
-var PHASER_PATH = './node_modules/phaser/build/';
 var DIST_PATH = './src/dist/';
 var BUILD_PATH = './build';
 var SCRIPTS_PATH = BUILD_PATH + '/scripts';
@@ -28,14 +26,8 @@ var SOURCE_PATH = './src';
 var STATIC_PATH = './static';
 var APP_PATH = './app/**/*.js';
 var APP_HTML_PATH = './app/**/*.html';
-var ENTRY_FILE = SOURCE_PATH + '/index.js';
-var OUTPUT_FILE = 'game.js';
 
 var keepFiles = false;
-
-function isProduction() {
-    return argv.production;
-}
 
 function cleanBuild() {
     if (!keepFiles) {
@@ -49,23 +41,6 @@ function cleanBuild() {
 function copyStatic() {
     return gulp.src(STATIC_PATH + '/**/*')
         .pipe(gulp.dest(BUILD_PATH));
-}
-
-function copyPhaser() {
-
-    var srcList = ['phaser.min.js'];
-
-    if (!isProduction()) {
-        srcList.push('phaser.map', 'phaser.js');
-    }
-
-    srcList = srcList.map(function (file) {
-        return PHASER_PATH + file;
-    });
-
-    return gulp.src(srcList)
-        .pipe(gulp.dest(SCRIPTS_PATH));
-
 }
 
 function copyApp() {
@@ -123,11 +98,9 @@ function copyNodeModules() {
 function build() {
     return gulp.src(DIST_PATH + "game.js")
         .pipe(gulp.dest(SCRIPTS_PATH));
-
 }
 
 function serve() {
-
     var options = {
         server: {
             baseDir: BUILD_PATH
@@ -139,6 +112,8 @@ function serve() {
 
     // Watches for changes in files inside the './src' folder.
     gulp.watch(SOURCE_PATH + '/**/*.js', ['watch-js']);
+    gulp.watch(APP_PATH, ['watch-js']);
+    gulp.watch(APP_HTML_PATH, ['watch-js']);
 
     // Watches for changes in files inside the './static' folder. Also sets 'keepFiles' to true (see cleanBuild()).
     gulp.watch(STATIC_PATH + '/**/*', ['watch-static']).on('change', function () {
@@ -152,9 +127,8 @@ gulp.task('copyNodeModules', copyNodeModules);
 gulp.task('copyApp', ['copyNodeModules'], copyApp);
 gulp.task('copyStatic', ['copyApp'], copyStatic);
 gulp.task('build', ['cleanBuild', 'copyStatic'], build);
-gulp.task('fastBuild', build);
 gulp.task('serve', ['build'], serve);
-gulp.task('watch-js', ['fastBuild'], browserSync.reload); // Rebuilds and reloads the project when executed.
+gulp.task('watch-js', ['build'], browserSync.reload); // Rebuilds and reloads the project when executed.
 gulp.task('watch-static', browserSync.reload);
 
 gulp.task('default', ['serve']);
