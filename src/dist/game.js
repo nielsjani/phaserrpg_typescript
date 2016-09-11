@@ -12,6 +12,7 @@ var States;
             this.load.spritesheet("player", "images/spritesheets/player_transp.png", 42, 60, 12, 0, 6);
             this.load.image("warningsign", "images/items/warningsign.png");
             this.load.image("portal", "images/items/portal.png");
+            this.load.image("encounter", "images/items/encounter.png");
         }
         create() {
             this.game.state.start("GameState", true, false, this.map, this.tileset);
@@ -53,6 +54,9 @@ var Classes;
                     if (item.properties.type === "door") {
                         items.push(new Classes.DoorItem(item.x, (item.y - state.map.tileHeight), item.properties.sprite, item.properties.map, item.properties.x, item.properties.y, item.properties.tileset));
                     }
+                    if (item.properties.type === "encounter") {
+                        items.push(new Classes.EncounterTrigger(item.x, (item.y - state.map.tileHeight), item.properties.sprite, item.properties.possibleEnemies.split(","), item.properties.encounterRate));
+                    }
                 });
                 return items;
             }
@@ -90,6 +94,9 @@ var States;
                 if (child.overlap(this.player)) {
                     child.customProperties.handleOverlap(this);
                 }
+                else if (child.customProperties.handleNoOverlap) {
+                    child.customProperties.handleNoOverlap(this);
+                }
             });
         }
         addPlayerAndCamera() {
@@ -100,11 +107,27 @@ var States;
     }
     States.GameState = GameState;
 })(States || (States = {}));
+var States;
+(function (States) {
+    class EncounterState extends Phaser.State {
+        init(possibleEnemies, state, player) {
+            this.possibleEnemies = possibleEnemies;
+            this.state = state;
+            this.player = player;
+        }
+        create() {
+        }
+        update() {
+        }
+    }
+    States.EncounterState = EncounterState;
+})(States || (States = {}));
 class Game extends Phaser.Game {
     constructor() {
         super(800, 600, Phaser.AUTO, 'content', null);
         this.state.add("LoadState", States.LoadState, false);
         this.state.add("GameState", States.GameState, false);
+        this.state.add("EncounterState", States.EncounterState, false);
         this.state.start('LoadState', false, false, "mymap1", "MyTileset");
     }
 }
@@ -143,6 +166,56 @@ var Classes;
         }
     }
     Classes.DoorItem = DoorItem;
+})(Classes || (Classes = {}));
+var Classes;
+(function (Classes) {
+    class EncounterTrigger {
+        constructor(x, y, sprite, possibleEnemies, encounterRate) {
+            this.x = x;
+            this.y = y;
+            this.sprite = sprite;
+            this.possibleEnemies = possibleEnemies;
+            this.encounterRate = encounterRate;
+            this.encounterPercentages = [1, 10, 25, 50, 100];
+            this.x = x;
+            this.y = y;
+            this.sprite = sprite;
+            this.possibleEnemies = possibleEnemies;
+            this.encounterRate = encounterRate;
+        }
+        getCustomProperties() {
+            return {
+                collides: false,
+                handleOverlap: this.handleOverlap,
+                handleNoOverlap: this.handleNoOverlap,
+                startEncounter: this.startEncounter,
+                possibleEnemies: this.possibleEnemies,
+                encounterRate: this.encounterRate,
+                encounterPercentages: this.encounterPercentages,
+                timeLoop: this.timeLoop,
+                state: this.state
+            };
+        }
+        startEncounter() {
+            var randomBetweenZeroAndHundred = Math.floor(Math.random() * 100) + 1;
+            if (this.encounterPercentages[this.encounterRate] < randomBetweenZeroAndHundred) {
+                this.state.game.state.start("EncounterState", true, false, this.possibleEnemies, this.state, this.state.player);
+            }
+        }
+        handleNoOverlap(state) {
+            if (this.timeLoop) {
+                state.game.time.events.remove(this.timeLoop);
+                this.timeLoop = undefined;
+            }
+        }
+        handleOverlap(state) {
+            this.state = state;
+            if (!this.timeLoop) {
+                this.timeLoop = state.game.time.events.loop(Phaser.Timer.SECOND * 5, this.startEncounter, this);
+            }
+        }
+    }
+    Classes.EncounterTrigger = EncounterTrigger;
 })(Classes || (Classes = {}));
 var Classes;
 (function (Classes) {

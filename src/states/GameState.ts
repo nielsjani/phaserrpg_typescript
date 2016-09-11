@@ -40,6 +40,8 @@ namespace States {
             this.items.children.forEach((child:any) => {
                 if (child.overlap(this.player)) {
                     child.customProperties.handleOverlap(this);
+                } else if(child.customProperties.handleNoOverlap){
+                    child.customProperties.handleNoOverlap(this);
                 }
             });
         }

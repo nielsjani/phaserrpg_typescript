@@ -18,6 +18,7 @@ namespace States {
             this.load.spritesheet("player", "images/spritesheets/player_transp.png", 42, 60, 12, 0, 6);
             this.load.image("warningsign", "images/items/warningsign.png");
             this.load.image("portal", "images/items/portal.png");
+            this.load.image("encounter", "images/items/encounter.png");
         }
 
         create() {

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="64" tileheight="64" nextobjectid="10">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="64" tileheight="64" nextobjectid="15">
  <tileset firstgid="1" name="MyTileset" tilewidth="64" tileheight="64" spacing="1" tilecount="81" columns="9">
   <image source="../tilesets/MyTileset.png" width="640" height="640"/>
  </tileset>
- <layer name="groundlayer" width="20" height="20">
+ <layer name="groundlayer" width="20" height="20" visible="0">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,
@@ -27,23 +27,23 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer name="collisionlayer" width="20" height="20">
+ <layer name="collisionlayer" width="20" height="20" visible="0">
   <data encoding="csv">
 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
 2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,
 2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,
 2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,
 2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,
-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,
-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,
-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,
-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,
-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,
-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,
-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,
-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,
-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,
-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,
+2,0,0,0,0,0,0,2,0,0,2,0,0,0,0,0,0,0,0,2,
+2,0,0,0,0,0,0,2,0,0,2,0,0,0,0,0,0,0,0,2,
+2,0,0,0,0,2,2,2,0,0,2,2,2,0,0,0,0,0,0,2,
+2,0,0,0,0,2,0,0,0,0,0,0,2,0,0,0,0,0,0,2,
+2,0,0,0,0,2,0,0,0,0,0,0,2,0,0,0,0,0,0,2,
+2,0,0,0,0,2,0,0,0,0,0,0,2,0,0,0,0,0,0,2,
+2,0,0,0,0,2,0,0,0,0,0,0,2,0,0,0,0,0,0,2,
+2,0,0,0,0,2,0,0,0,0,0,0,2,0,0,0,0,0,0,2,
+2,0,0,0,0,2,0,0,0,0,0,0,2,0,0,0,0,0,0,2,
+2,0,0,0,0,2,2,2,2,2,2,2,2,0,0,0,0,0,0,2,
 2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,
 2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,
 2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,
@@ -74,6 +74,14 @@
     <property name="sprite" value="warningsign"/>
     <property name="text" value="#Welcome to my game! I hope you will enjoy playing this little piece of concept I've made. #This text is long to see if I can show it in parts and block player movement while showing this. #Try moving for a bit. It doesn't work, right? #That means it's working! Let's make this text a bit longer, just for good measure. #I know it's getting annoying, but I've got to do this, mate."/>
     <property name="type" value="text"/>
+   </properties>
+  </object>
+  <object id="12" gid="5" x="384" y="897.333" width="384.667" height="385.333" visible="0">
+   <properties>
+    <property name="encounterRate" value="2"/>
+    <property name="possibleEnemies" value="rat,goblin"/>
+    <property name="sprite" value="encounter"/>
+    <property name="type" value="encounter"/>
    </properties>
   </object>
  </objectgroup>

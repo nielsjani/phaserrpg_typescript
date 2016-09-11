@@ -28,8 +28,15 @@ var APP_PATH = './app/**/*.js';
 var APP_HTML_PATH = './app/**/*.html';
 
 var keepFiles = false;
+var onlyDeleteWorkingFiles = false;
 
 function cleanBuild() {
+    if(onlyDeleteWorkingFiles) {
+        del(['build/scripts/app.min.js']);
+        del(['build/scripts/app.min.js.map']);
+        del(['build/scripts/game.js']);
+        return;
+    }
     if (!keepFiles) {
         del(['build/**/*.*']);
     } else {
@@ -91,6 +98,9 @@ function templates() {
 }
 
 function copyNodeModules() {
+    if(onlyDeleteWorkingFiles) {
+        return;
+    }
     return gulp.src(gnf(), {base: './'})
         .pipe(gulp.dest(SCRIPTS_PATH));
 }
@@ -111,8 +121,12 @@ function serve() {
     browserSync(options);
 
     // Watches for changes in files inside the './src' folder.
-    gulp.watch(SOURCE_PATH + '/**/*.js', ['watch-js']);
-    gulp.watch(APP_PATH, ['watch-js']);
+    gulp.watch(SOURCE_PATH + '/**/*.js', ['watch-js']).on('change', function () {
+        onlyDeleteWorkingFiles = true;
+    });
+    gulp.watch(APP_PATH, ['watch-js']).on('change', function () {
+        onlyDeleteWorkingFiles = true;
+    });
     gulp.watch(APP_HTML_PATH, ['watch-js']);
 
     // Watches for changes in files inside the './static' folder. Also sets 'keepFiles' to true (see cleanBuild()).

@@ -36,12 +36,16 @@ namespace Classes.Util {
                 if (item.properties.type === "door") {
                     items.push(new DoorItem(item.x, (item.y - state.map.tileHeight), item.properties.sprite, item.properties.map, item.properties.x, item.properties.y, item.properties.tileset));
                 }
+                if (item.properties.type === "encounter") {
+                    items.push(new EncounterTrigger(item.x, (item.y - state.map.tileHeight), item.properties.sprite, item.properties.possibleEnemies.split(","), item.properties.encounterRate));
+                }
             });
             return items;
         }
 
         addToGroup(item:Classes.Item, group:Phaser.Group) {
             let sprite = group.create(item.x, item.y, item.sprite);
+            //TODO: Add whole item as a property to sprite
             sprite.customProperties = item.getCustomProperties();
             sprite.body.immovable = sprite.customProperties.collides;
         }
