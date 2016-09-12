@@ -12,7 +12,7 @@ var States;
             this.load.spritesheet("player", "images/spritesheets/player_transp.png", 42, 60, 12, 0, 6);
             this.load.image("warningsign", "images/items/warningsign.png");
             this.load.image("portal", "images/items/portal.png");
-            this.load.image("encounter", "images/items/encounter.png");
+            this.load.image("encounter", "images/items/transparant.png");
         }
         create() {
             this.game.state.start("GameState", true, false, this.map, this.tileset);
@@ -55,13 +55,17 @@ var Classes;
                         items.push(new Classes.DoorItem(item.x, (item.y - state.map.tileHeight), item.properties.sprite, item.properties.map, item.properties.x, item.properties.y, item.properties.tileset));
                     }
                     if (item.properties.type === "encounter") {
-                        items.push(new Classes.EncounterTrigger(item.x, (item.y - state.map.tileHeight), item.properties.sprite, item.properties.possibleEnemies.split(","), item.properties.encounterRate));
+                        items.push(new Classes.EncounterTrigger(item.x, (item.y - state.map.tileHeight), item.properties.sprite, item.properties.possibleEnemies.split(","), item.properties.encounterRate, item.properties.widthInTiles, item.properties.heightInTiles));
                     }
                 });
                 return items;
             }
             addToGroup(item, group) {
                 let sprite = group.create(item.x, item.y, item.sprite);
+                if (item instanceof Classes.EncounterTrigger) {
+                    sprite.width = sprite.width * item.widthInTiles;
+                    sprite.height = sprite.height * item.heightInTiles;
+                }
                 sprite.customProperties = item.getCustomProperties();
                 sprite.body.immovable = sprite.customProperties.collides;
             }
@@ -170,18 +174,22 @@ var Classes;
 var Classes;
 (function (Classes) {
     class EncounterTrigger {
-        constructor(x, y, sprite, possibleEnemies, encounterRate) {
+        constructor(x, y, sprite, possibleEnemies, encounterRate, widthInTiles, heightInTiles) {
             this.x = x;
             this.y = y;
             this.sprite = sprite;
             this.possibleEnemies = possibleEnemies;
             this.encounterRate = encounterRate;
+            this.widthInTiles = widthInTiles;
+            this.heightInTiles = heightInTiles;
             this.encounterPercentages = [1, 10, 25, 50, 100];
             this.x = x;
             this.y = y;
             this.sprite = sprite;
             this.possibleEnemies = possibleEnemies;
             this.encounterRate = encounterRate;
+            this.widthInTiles = widthInTiles;
+            this.heightInTiles = heightInTiles;
         }
         getCustomProperties() {
             return {
@@ -204,11 +212,13 @@ var Classes;
         }
         handleNoOverlap(state) {
             if (this.timeLoop) {
+                console.log("Left encounter tile");
                 state.game.time.events.remove(this.timeLoop);
                 this.timeLoop = undefined;
             }
         }
         handleOverlap(state) {
+            console.log("Entered encounter tile");
             this.state = state;
             if (!this.timeLoop) {
                 this.timeLoop = state.game.time.events.loop(Phaser.Timer.SECOND * 5, this.startEncounter, this);

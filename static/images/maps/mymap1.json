@@ -6,7 +6,7 @@
          "name":"groundlayer",
          "opacity":1,
          "type":"tilelayer",
-         "visible":false,
+         "visible":true,
          "width":20,
          "x":0,
          "y":0
@@ -17,7 +17,7 @@
          "name":"collisionlayer",
          "opacity":1,
          "type":"tilelayer",
-         "visible":false,
+         "visible":true,
          "width":20,
          "x":0,
          "y":0
@@ -107,29 +107,33 @@
                 }, 
                 {
                  "gid":5,
-                 "height":385.333333333333,
+                 "height":64,
                  "id":12,
                  "name":"",
                  "properties":
                     {
                      "encounterRate":"2",
+                     "heightInTiles":"6",
                      "possibleEnemies":"rat,goblin",
                      "sprite":"encounter",
-                     "type":"encounter"
+                     "type":"encounter",
+                     "widthInTiles":"6"
                     },
                  "propertytypes":
                     {
                      "encounterRate":"string",
+                     "heightInTiles":"string",
                      "possibleEnemies":"string",
                      "sprite":"string",
-                     "type":"string"
+                     "type":"string",
+                     "widthInTiles":"string"
                     },
                  "rotation":0,
                  "type":"",
-                 "visible":false,
-                 "width":384.666666666667,
+                 "visible":true,
+                 "width":64,
                  "x":384,
-                 "y":897.333333333333
+                 "y":576
                 }],
          "opacity":1,
          "type":"objectgroup",

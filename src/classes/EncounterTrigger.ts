@@ -8,12 +8,14 @@ namespace Classes {
         private timeLoop: Phaser.TimerEvent;
         private state: GameState;
 
-        constructor(public x:number, public y:number, public sprite:string, public possibleEnemies:string[], public encounterRate:number) {
+        constructor(public x:number, public y:number, public sprite:string, public possibleEnemies:string[], public encounterRate:number, public widthInTiles: number, public heightInTiles: number) {
             this.x = x;
             this.y = y;
             this.sprite = sprite;
             this.possibleEnemies = possibleEnemies;
             this.encounterRate = encounterRate;
+            this.widthInTiles = widthInTiles;
+            this.heightInTiles = heightInTiles;
         }
 
         getCustomProperties() {
@@ -39,12 +41,14 @@ namespace Classes {
 
         handleNoOverlap(state:GameState) {
             if(this.timeLoop) {
+                console.log("Left encounter tile");
                 state.game.time.events.remove(this.timeLoop);
                 this.timeLoop = undefined;
             }
         }
 
         handleOverlap(state:GameState) {
+            console.log("Entered encounter tile");
             this.state = state;
             if(!this.timeLoop) {
                 this.timeLoop = state.game.time.events.loop(Phaser.Timer.SECOND * 5, this.startEncounter, this);
