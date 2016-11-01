@@ -23,6 +23,10 @@ namespace States {
         }
 
         create() {
+            //TEMPORARY
+            this.game.state.start("EncounterState", true, false, null, this, null);
+
+
             this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
 
             this.cursors = this.input.keyboard.createCursorKeys();

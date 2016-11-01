@@ -13,6 +13,9 @@ var States;
             this.load.image("warningsign", "images/items/warningsign.png");
             this.load.image("portal", "images/items/portal.png");
             this.load.image("encounter", "images/items/transparant.png");
+            this.load.spritesheet("button", "images/menus/buttonBig.png", 200, 100);
+            this.load.spritesheet("paginationPrevious", "images/menus/paginationPrevious.png", 50, 50);
+            this.load.spritesheet("paginationNext", "images/menus/paginationNext.png", 50, 50);
         }
         create() {
             this.game.state.start("GameState", true, false, this.map, this.tileset);
@@ -85,6 +88,7 @@ var States;
             this.tileset = tileset;
         }
         create() {
+            this.game.state.start("EncounterState", true, false, null, this, null);
             this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
             this.cursors = this.input.keyboard.createCursorKeys();
             this.spacebar = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -111,15 +115,198 @@ var States;
     }
     States.GameState = GameState;
 })(States || (States = {}));
+var Classes;
+(function (Classes) {
+    var Util;
+    (function (Util) {
+        var Constants;
+        (function (Constants) {
+            Constants.GAME_WIDTH = 800;
+            Constants.GAME_HEIGHT = 600;
+            Constants.ENCOUNTER_MENU_BUTTON_WIDTH = 200;
+            Constants.ENCOUNTER_MENU_BUTTON_HEIGHT = 100;
+        })(Constants = Util.Constants || (Util.Constants = {}));
+    })(Util = Classes.Util || (Classes.Util = {}));
+})(Classes || (Classes = {}));
 var States;
 (function (States) {
+    var Constants = Classes.Util.Constants;
     class EncounterState extends Phaser.State {
+        constructor(...args) {
+            super(...args);
+            this.attackButtons = [];
+            this.currentItemsPage = 0;
+            this.numberOfItemsPerPage = 5;
+            this.currentlyShownItems = [];
+        }
         init(possibleEnemies, state, player) {
             this.possibleEnemies = possibleEnemies;
             this.state = state;
             this.player = player;
+            this.attacks = [{ name: "Bite", power: 10 }, { name: "Scratch", power: 15 }, { name: "Weep", power: 0 }];
+            this.items = [
+                { name: "Potion", amount: 5 },
+                { name: "Smoke bomb", amount: 2 },
+                { name: "X marker", amount: 1 },
+                { name: "X attacker", amount: 1 },
+                { name: "X defender", amount: 1 },
+                { name: "Pokéball", amount: 1 },
+                { name: "Link's sword", amount: 1 },
+                { name: "???", amount: 1 },
+                { name: "Mattress", amount: 1 },
+                { name: "Bowl of pee", amount: 1 },
+                { name: "Eleven", amount: 1 }
+            ];
         }
         create() {
+            this.createBaseMenu();
+            this.createAttacksMenu();
+            this.aggregateAndOrderItems();
+            this.createItemPaginationButtons();
+        }
+        createBaseMenu() {
+            this.createButtonWithText("Attack", 0, Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2), this.openAttacksMenu);
+            this.createButtonWithText("Items", Constants.ENCOUNTER_MENU_BUTTON_WIDTH, Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2), this.openBag);
+            this.createButtonWithText("Special", 0, Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT, this.useSpecial);
+            this.createButtonWithText("Flee", Constants.ENCOUNTER_MENU_BUTTON_WIDTH, Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT, this.flee);
+        }
+        ;
+        createAttacksMenu() {
+            let attack1 = this.createAttackButton(0, Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 2, Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2), this.useAttack1);
+            let attack2 = this.createAttackButton(1, Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 3, Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2), this.useAttack2);
+            let attack3 = this.createAttackButton(2, Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 2, Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT, this.useAttack3);
+            let attack4 = this.createAttackButton(3, Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 3, Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT, this.useAttack4);
+            this.attackButtons.push(attack1, attack2, attack3, attack4);
+        }
+        ;
+        createItemPaginationButtons() {
+            let itemsToShow = this.items.slice(this.currentItemsPage * 5, this.numberOfItemsPerPage);
+            this.itemPaginationPreviousButton = this.createButtonWithTextAndImage("", Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 3, ((itemsToShow.length - 1) * Constants.ENCOUNTER_MENU_BUTTON_HEIGHT) + Constants.ENCOUNTER_MENU_BUTTON_HEIGHT, this.previousItems, "paginationPrevious", false);
+            this.itemPaginationNextButton = this.createButtonWithTextAndImage("", (Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 3) + 150, ((itemsToShow.length - 1) * Constants.ENCOUNTER_MENU_BUTTON_HEIGHT) + Constants.ENCOUNTER_MENU_BUTTON_HEIGHT, this.nextItems, "paginationNext", false);
+            this.itemPaginationPreviousButton.visible = false;
+            this.itemPaginationNextButton.visible = false;
+        }
+        createAttackButton(index, x, y, clickFunction) {
+            let text = "-";
+            if (this.hasAttackInSlot(index)) {
+                text = this.attacks[index].name;
+            }
+            let createdButton = this.createButtonWithText(text, x, y, clickFunction);
+            createdButton.inputEnabled = this.hasAttackInSlot(index);
+            createdButton.visible = false;
+            return createdButton;
+        }
+        hasAttackInSlot(index) {
+            return this.attacks.length - 1 >= index;
+        }
+        ;
+        createButtonWithText(buttonText, x, y, clickFunction) {
+            return this.createButtonWithTextAndImage(buttonText, x, y, clickFunction, "button", true);
+        }
+        ;
+        createButtonWithTextAndImage(buttonText, x, y, clickFunction, buttonImage, hasStates) {
+            let button = hasStates ? this.state.game.add.button(x, y, buttonImage, clickFunction, this, 0, 1, 2, 3) :
+                this.state.game.add.button(x, y, buttonImage, clickFunction, this, 0);
+            let textStyle = {
+                font: 'bold 24pt Arial',
+                wordWrap: true,
+                wordWrapWidth: Constants.ENCOUNTER_MENU_BUTTON_WIDTH,
+                boundsAlignH: "center",
+                boundsAlignV: "middle"
+            };
+            let text = this.game.add.text(0, 0, buttonText, textStyle);
+            text.setTextBounds(0, 0, Constants.ENCOUNTER_MENU_BUTTON_WIDTH, Constants.ENCOUNTER_MENU_BUTTON_HEIGHT);
+            button.addChild(text);
+            return button;
+        }
+        ;
+        openAttacksMenu() {
+            this.destroyItemsMenu();
+            this.showAttacks();
+        }
+        showAttacks() {
+            this.attackButtons.forEach(function (btn) {
+                btn.visible = true;
+            });
+        }
+        ;
+        hideAttacks() {
+            this.attackButtons.forEach(function (btn) {
+                btn.visible = false;
+            });
+        }
+        ;
+        useAttack1() {
+            this.attack(this.attacks[0]);
+        }
+        useAttack2() {
+            this.attack(this.attacks[1]);
+        }
+        useAttack3() {
+            this.attack(this.attacks[2]);
+        }
+        useAttack4() {
+            this.attack(this.attacks[3]);
+        }
+        attack(attack) {
+            console.log("ATTACK! " + attack.name + " " + attack.power + "DMG");
+        }
+        aggregateAndOrderItems() {
+            this.sortItemsByName();
+        }
+        sortItemsByName() {
+            this.items.sort(function (item, item2) {
+                return item.name > item2.name ? 1 : -1;
+            });
+        }
+        ;
+        openBag() {
+            this.hideAttacks();
+            this.createCurrentShownItems();
+            this.itemPaginationNextButton.visible = this.items.length > this.numberOfItemsPerPage;
+        }
+        createCurrentShownItems() {
+            var start = this.currentItemsPage * 5;
+            let itemsToShow = this.items.slice(start, start + this.numberOfItemsPerPage);
+            for (let i = 0; i < itemsToShow.length; i++) {
+                let createdButton = this.createButtonWithText(itemsToShow[i].name, Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 3, i * Constants.ENCOUNTER_MENU_BUTTON_HEIGHT, this.useItem(itemsToShow[i].name));
+                this.currentlyShownItems.push(createdButton);
+            }
+        }
+        previousItems() {
+            this.destroyItemsMenu();
+            this.currentItemsPage--;
+            this.createCurrentShownItems();
+            this.itemPaginationNextButton.visible = true;
+            this.itemPaginationPreviousButton.visible = this.currentItemsPage !== 0;
+        }
+        nextItems() {
+            this.destroyItemsMenu();
+            this.currentItemsPage++;
+            this.createCurrentShownItems();
+            this.itemPaginationPreviousButton.visible = true;
+            this.itemPaginationNextButton.visible = this.items.length > (this.currentItemsPage * 5) + this.numberOfItemsPerPage;
+        }
+        destroyItemsMenu() {
+            this.currentlyShownItems.forEach(function (item) {
+                item.destroy();
+            });
+            this.currentlyShownItems = [];
+            this.itemPaginationNextButton.visible = false;
+            this.itemPaginationPreviousButton.visible = false;
+        }
+        useItem(itemName) {
+            return function () {
+                console.log("USED " + itemName);
+            };
+        }
+        useSpecial() {
+            this.hideAttacks();
+            this.destroyItemsMenu();
+            console.log("I'm special!");
+        }
+        flee() {
+            this.game.state.start('LoadState', false, false, "mymap1", "MyTileset");
         }
         update() {
         }

@@ -19,6 +19,12 @@ namespace States {
             this.load.image("warningsign", "images/items/warningsign.png");
             this.load.image("portal", "images/items/portal.png");
             this.load.image("encounter", "images/items/transparant.png");
+
+            //encounter state
+            //this.load.spritesheet("button", "images/menus/button.png", 60, 40);
+            this.load.spritesheet("button", "images/menus/buttonBig.png", 200, 100);
+            this.load.spritesheet("paginationPrevious", "images/menus/paginationPrevious.png", 50, 50);
+            this.load.spritesheet("paginationNext", "images/menus/paginationNext.png", 50, 50);
         }
 
         create() {
