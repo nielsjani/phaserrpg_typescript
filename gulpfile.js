@@ -182,7 +182,7 @@ function unitTest(singleRun, callback) {
     server.start();
 }
 
-gulp.task("test", function (callback) {
+gulp.task("runtest", function (callback) {
     unitTest(true, callback);
 });
 

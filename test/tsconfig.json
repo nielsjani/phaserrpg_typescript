@@ -5,7 +5,7 @@
     "noImplicitAny": true,
     "removeComments": true,
     "preserveConstEnums": true,
-    "outFile": "tstranspiled/tests.js",
+    "outFile": "tstranspiled/tests.spec.js",
     "sourceMap": true,
     "target": "es6"
   },
