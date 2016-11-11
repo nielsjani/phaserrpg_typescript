@@ -21,12 +21,6 @@ module.exports = function configure(config) {
             browsers: ["PhantomJS"],
             frameworks: ["jasmine"],
             reporters: ["mocha"],
-            // junitReporter: {
-            //     outputDir: "src/dist/surefire-reports/",
-            //     outputFile: "TEST-results.xml",
-            //     suite: "habitrpg",
-            //     useBrowserName: false
-            // },
             port: 9876
         });
 };

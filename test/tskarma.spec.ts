@@ -12,6 +12,6 @@ describe('TextItem', () => {
     it('Should collide', () => {
         var textItem: TextItem = new TextItem(5,6,"bla", "bli");
 
-        expect(textItem.collides).toBe(true);
+        expect(textItem.collides).toBeTruthy();
     });
 });
