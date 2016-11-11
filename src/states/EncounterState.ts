@@ -23,6 +23,11 @@ namespace States {
         private itemPaginationPreviousButton: Phaser.Button;
         private itemPaginationNextButton: Phaser.Button;
 
+        //TODO: display health/MP
+        //TODO: display enemies
+        //TODO: information textbox with text that describes when something has happened
+        //TODO: turn-based
+
         init(possibleEnemies:string[], state:Phaser.State, player:Player) {
             this.possibleEnemies = possibleEnemies;
             this.state = state;

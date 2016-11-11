@@ -18,6 +18,7 @@ var rename = require("gulp-rename");
 var concat = require("gulp-concat");
 var babel = require("gulp-babel");
 var gnf = require('gulp-npm-files');
+var karma = require("karma");
 
 var DIST_PATH = './src/dist/';
 var BUILD_PATH = './build';
@@ -26,12 +27,15 @@ var SOURCE_PATH = './src';
 var STATIC_PATH = './static';
 var APP_PATH = './app/**/*.js';
 var APP_HTML_PATH = './app/**/*.html';
+var TEST_PATH = "./test/**/*.js";
+var TEST_DIST_PATH = "./src/dist/test";
+
 
 var keepFiles = false;
 var onlyDeleteWorkingFiles = false;
 
 function cleanBuild() {
-    if(onlyDeleteWorkingFiles) {
+    if (onlyDeleteWorkingFiles) {
         del(['build/scripts/app.min.js']);
         del(['build/scripts/app.min.js.map']);
         del(['build/scripts/game.js']);
@@ -98,7 +102,7 @@ function templates() {
 }
 
 function copyNodeModules() {
-    if(onlyDeleteWorkingFiles) {
+    if (onlyDeleteWorkingFiles) {
         return;
     }
     return gulp.src(gnf(), {base: './'})
@@ -107,6 +111,12 @@ function copyNodeModules() {
 
 function build() {
     return gulp.src(DIST_PATH + "game.js")
+        .pipe(babel({
+            moduleIds: true,
+            compact: true,
+            presets: ["es2015"],
+            plugins: ["transform-es2015-modules-commonjs"]
+        }))
         .pipe(gulp.dest(SCRIPTS_PATH));
 }
 
@@ -136,6 +146,47 @@ function serve() {
 
 }
 
+function buildtest() {
+    return gulp
+        .src(TEST_PATH)
+        .pipe(plumber())
+        .pipe(sourceMaps.init())
+        .pipe(babel({
+            moduleIds: true,
+            presets: ["es2015"],
+            plugins: ["transform-es2015-modules-systemjs"]
+        }))
+        .pipe(sourceMaps.write("./"))
+        .pipe(gulp.dest(TEST_DIST_PATH));
+}
+
+function unitTest(singleRun, callback) {
+    console.log("DIRNAME:");
+    console.log(__dirname);
+    var server = new karma.Server({
+        configFile: `${__dirname}/test/config/karma.config.js`,
+        singleRun
+    });
+
+    server.on('browser_error', function (browser, err) {
+        throw err;
+    });
+
+    server.on('run_complete', function (browsers, results) {
+        if (results.failed) {
+            throw new Error('Karma: Tests Failed');
+        }
+        callback();
+    });
+
+    server.start();
+}
+
+gulp.task("test", function (callback) {
+    unitTest(true, callback);
+});
+
+gulp.task('buildtest', buildtest);
 gulp.task('cleanBuild', cleanBuild);
 gulp.task('copyNodeModules', copyNodeModules);
 gulp.task('copyApp', ['copyNodeModules'], copyApp);

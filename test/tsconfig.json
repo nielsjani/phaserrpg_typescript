@@ -5,16 +5,12 @@
     "noImplicitAny": true,
     "removeComments": true,
     "preserveConstEnums": true,
-    "outFile": "src/dist/game.js",
+    "outFile": "tstranspiled/tests.js",
     "sourceMap": true,
     "target": "es6"
   },
   "include": [
-    "src/classes/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "node_modules/bs-recipes/recipes/webpack.typescript/src/main.ts",
-    "build"
+    "**/*"
   ]
+
 }
