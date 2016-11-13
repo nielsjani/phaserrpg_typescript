@@ -16,6 +16,7 @@ var States;
             this.load.spritesheet("button", "images/menus/buttonBig.png", 200, 100);
             this.load.spritesheet("paginationPrevious", "images/menus/paginationPrevious.png", 50, 50);
             this.load.spritesheet("paginationNext", "images/menus/paginationNext.png", 50, 50);
+            this.load.spritesheet("player_backsprite", "images/encounter/player_backsprite.png", 200, 200);
         }
         create() {
             this.game.state.start("GameState", true, false, this.map, this.tileset);
@@ -78,6 +79,7 @@ var Classes;
 })(Classes || (Classes = {}));
 var States;
 (function (States) {
+    var MapCreator = Classes.Util.MapCreator;
     class GameState extends Phaser.State {
         constructor(...args) {
             super(...args);
@@ -88,11 +90,11 @@ var States;
             this.tileset = tileset;
         }
         create() {
-            this.game.state.start("EncounterState", true, false, null, this, null);
+            this.game.state.start("EncounterState", true, false, null, this, this.player);
             this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
             this.cursors = this.input.keyboard.createCursorKeys();
             this.spacebar = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-            new Classes.Util.MapCreator().createMap(this);
+            new MapCreator().createMap(this);
             this.addPlayerAndCamera();
         }
         update() {
@@ -157,6 +159,7 @@ var States;
                 { name: "Bowl of pee", amount: 1 },
                 { name: "Eleven", amount: 1 }
             ];
+            this.add.sprite(200, 200, "player_backsprite");
         }
         create() {
             this.createBaseMenu();
@@ -165,10 +168,12 @@ var States;
             this.createItemPaginationButtons();
         }
         createBaseMenu() {
-            this.createButtonWithText("Attack", 0, Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2), this.openAttacksMenu);
-            this.createButtonWithText("Items", Constants.ENCOUNTER_MENU_BUTTON_WIDTH, Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2), this.openBag);
-            this.createButtonWithText("Special", 0, Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT, this.useSpecial);
-            this.createButtonWithText("Flee", Constants.ENCOUNTER_MENU_BUTTON_WIDTH, Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT, this.flee);
+            this.mainMenu = [
+                this.createButtonWithText("Attack", 0, Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2), this.openAttacksMenu),
+                this.createButtonWithText("Items", Constants.ENCOUNTER_MENU_BUTTON_WIDTH, Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2), this.openBag),
+                this.createButtonWithText("Special", 0, Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT, this.useSpecial),
+                this.createButtonWithText("Flee", Constants.ENCOUNTER_MENU_BUTTON_WIDTH, Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT, this.flee)
+            ];
         }
         ;
         createAttacksMenu() {
@@ -325,6 +330,148 @@ class Game extends Phaser.Game {
 new Game();
 var Classes;
 (function (Classes) {
+    class Stats {
+        constructor(level, maxhealth, maxmana, attack, defense, speed) {
+            this.level = level;
+            this.maxhealth = maxhealth;
+            this.currenthealth = maxhealth;
+            this.maxmana = maxmana;
+            this.currentmana = maxmana;
+            this.attack = attack;
+            this.defense = defense;
+            this.speed = speed;
+        }
+    }
+    Classes.Stats = Stats;
+    class StatsBuilder {
+        stats() {
+            return this;
+        }
+        build() {
+            return new Stats(this.level, this.maxhealth, this.maxmana, this.attack, this.defense, this.speed);
+        }
+        withLevel(value) {
+            this.level = value;
+            return this;
+        }
+        withMaxhealth(value) {
+            this.maxhealth = value;
+            return this;
+        }
+        withMaxmana(value) {
+            this.maxmana = value;
+            return this;
+        }
+        withAttack(value) {
+            this.attack = value;
+            return this;
+        }
+        withDefense(value) {
+            this.defense = value;
+            return this;
+        }
+        withSpeed(value) {
+            this.speed = value;
+            return this;
+        }
+    }
+    Classes.StatsBuilder = StatsBuilder;
+})(Classes || (Classes = {}));
+var Classes;
+(function (Classes) {
+    class Enemy {
+        constructor(stats, imageKey) {
+            this.stats = stats;
+            this.imageKey = imageKey;
+        }
+        getImageKey() {
+            return this.imageKey;
+        }
+    }
+    Classes.Enemy = Enemy;
+})(Classes || (Classes = {}));
+var Classes;
+(function (Classes) {
+    class Rat extends Classes.Enemy {
+        constructor(stats, imageKey) {
+            super(stats, imageKey);
+        }
+        performTurn(encounterState) {
+        }
+        ;
+    }
+    Classes.Rat = Rat;
+})(Classes || (Classes = {}));
+var Classes;
+(function (Classes) {
+    class Player extends Phaser.Sprite {
+        constructor(state, x, y, imageRef) {
+            super(state.game, x, y, imageRef);
+            this.state = state;
+            this.x = x;
+            this.y = y;
+            this.imageRef = imageRef;
+            this.state = state;
+            this.animations.add('left', [0, 1, 2], 10, true);
+            this.animations.add('right', [3, 4, 5], 10, true);
+            this.animations.add('down', [6, 7, 8], 10, true);
+            this.animations.add('up', [9, 10, 11], 10, true);
+            this.state.physics.arcade.enable(this);
+            this.createIdlePoses();
+            this.createPlayerStats();
+        }
+        createPlayerStats() {
+            this.playerStats = new Classes.StatsBuilder().stats()
+                .withLevel(1)
+                .withAttack(10)
+                .withDefense(10)
+                .withSpeed(10)
+                .withMaxhealth(100)
+                .withMaxmana(10)
+                .build();
+        }
+        createIdlePoses() {
+            this.idlePoses = new Map();
+            this.idlePoses.set("left", 1);
+            this.idlePoses.set("right", 4);
+            this.idlePoses.set("down", 7);
+            this.idlePoses.set("up", 10);
+        }
+        update() {
+            this.body.velocity.x = 0;
+            this.body.velocity.y = 0;
+            if (!this.state.displayingText) {
+                if (this.state.cursors.left.isDown) {
+                    this.body.velocity.x -= 600;
+                    this.animations.play("left");
+                    this.lastDirection = "left";
+                }
+                else if (this.state.cursors.right.isDown) {
+                    this.body.velocity.x += 600;
+                    this.animations.play("right");
+                    this.lastDirection = "right";
+                }
+                else if (this.state.cursors.up.isDown) {
+                    this.body.velocity.y -= 600;
+                    this.animations.play("up");
+                    this.lastDirection = "up";
+                }
+                else if (this.state.cursors.down.isDown) {
+                    this.body.velocity.y += 600;
+                    this.animations.play("down");
+                    this.lastDirection = "down";
+                }
+                else {
+                    this.animations.stop();
+                    this.frame = this.lastDirection ? this.idlePoses.get(this.lastDirection) : 7;
+                }
+            }
+        }
+    }
+    Classes.Player = Player;
+})(Classes || (Classes = {}));
+var Classes;
+(function (Classes) {
     class DoorItem {
         constructor(x, y, sprite, map, playerx, playery, tileset) {
             this.x = x;
@@ -413,63 +560,6 @@ var Classes;
         }
     }
     Classes.EncounterTrigger = EncounterTrigger;
-})(Classes || (Classes = {}));
-var Classes;
-(function (Classes) {
-    class Player extends Phaser.Sprite {
-        constructor(state, x, y, imageRef) {
-            super(state.game, x, y, imageRef);
-            this.state = state;
-            this.x = x;
-            this.y = y;
-            this.imageRef = imageRef;
-            this.state = state;
-            this.animations.add('left', [0, 1, 2], 10, true);
-            this.animations.add('right', [3, 4, 5], 10, true);
-            this.animations.add('down', [6, 7, 8], 10, true);
-            this.animations.add('up', [9, 10, 11], 10, true);
-            this.state.physics.arcade.enable(this);
-            this.createIdlePoses();
-        }
-        createIdlePoses() {
-            this.idlePoses = new Map();
-            this.idlePoses.set("left", 1);
-            this.idlePoses.set("right", 4);
-            this.idlePoses.set("down", 7);
-            this.idlePoses.set("up", 10);
-        }
-        update() {
-            this.body.velocity.x = 0;
-            this.body.velocity.y = 0;
-            if (!this.state.displayingText) {
-                if (this.state.cursors.left.isDown) {
-                    this.body.velocity.x -= 600;
-                    this.animations.play("left");
-                    this.lastDirection = "left";
-                }
-                else if (this.state.cursors.right.isDown) {
-                    this.body.velocity.x += 600;
-                    this.animations.play("right");
-                    this.lastDirection = "right";
-                }
-                else if (this.state.cursors.up.isDown) {
-                    this.body.velocity.y -= 600;
-                    this.animations.play("up");
-                    this.lastDirection = "up";
-                }
-                else if (this.state.cursors.down.isDown) {
-                    this.body.velocity.y += 600;
-                    this.animations.play("down");
-                    this.lastDirection = "down";
-                }
-                else {
-                    this.animations.stop();
-                    this.frame = this.lastDirection ? this.idlePoses.get(this.lastDirection) : 7;
-                }
-            }
-        }
-    }
-    Classes.Player = Player;
 })(Classes || (Classes = {}));
 var Classes;
 (function (Classes) {

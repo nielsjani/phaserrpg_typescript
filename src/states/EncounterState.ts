@@ -9,43 +9,46 @@ namespace States {
 
     export class EncounterState extends Phaser.State {
         //TODO: attacks: field on player
-        private attacks:any[];
-        private items:any[];
-        private possibleEnemies:string[];
-        private state:Phaser.State;
-        private player:Player;
+        private attacks: any[];
+        private items: any[];
+        private possibleEnemies: string[];
+        private state: Phaser.State;
+        private player: Player;
 
-        private attackButtons:Phaser.Button[] = [];
+        private attackButtons: Phaser.Button[] = [];
 
         private currentItemsPage: number = 0;
         private numberOfItemsPerPage: number = 5;
         private currentlyShownItems: Phaser.Button[] = [];
         private itemPaginationPreviousButton: Phaser.Button;
         private itemPaginationNextButton: Phaser.Button;
+        private mainMenu: Phaser.Button[];
 
         //TODO: display health/MP
         //TODO: display enemies
         //TODO: information textbox with text that describes when something has happened
         //TODO: turn-based
 
-        init(possibleEnemies:string[], state:Phaser.State, player:Player) {
+        init(possibleEnemies: string[], state: Phaser.State, player: Player) {
             this.possibleEnemies = possibleEnemies;
             this.state = state;
             this.player = player;
             this.attacks = [{name: "Bite", power: 10}, {name: "Scratch", power: 15}, {name: "Weep", power: 0}];
             this.items = [
                 {name: "Potion", amount: 5},
-                {name: "Smoke bomb", amount:2},
-                {name: "X marker", amount:1},
-                {name: "X attacker", amount:1},
-                {name: "X defender", amount:1},
-                {name: "Pokéball", amount:1},
-                {name: "Link's sword", amount:1},
-                {name: "???", amount:1},
-                {name: "Mattress", amount:1},
-                {name: "Bowl of pee", amount:1},
-                {name: "Eleven", amount:1}
+                {name: "Smoke bomb", amount: 2},
+                {name: "X marker", amount: 1},
+                {name: "X attacker", amount: 1},
+                {name: "X defender", amount: 1},
+                {name: "Pokéball", amount: 1},
+                {name: "Link's sword", amount: 1},
+                {name: "???", amount: 1},
+                {name: "Mattress", amount: 1},
+                {name: "Bowl of pee", amount: 1},
+                {name: "Eleven", amount: 1}
             ];
+
+            this.add.sprite(200,200, "player_backsprite");
         }
 
 
@@ -58,10 +61,12 @@ namespace States {
         }
 
         private createBaseMenu() {
-            this.createButtonWithText("Attack", 0, Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2), this.openAttacksMenu);
-            this.createButtonWithText("Items", Constants.ENCOUNTER_MENU_BUTTON_WIDTH, Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2), this.openBag);
-            this.createButtonWithText("Special", 0, Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT, this.useSpecial);
-            this.createButtonWithText("Flee", Constants.ENCOUNTER_MENU_BUTTON_WIDTH, Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT, this.flee);
+            this.mainMenu = [
+                this.createButtonWithText("Attack", 0, Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2), this.openAttacksMenu),
+                this.createButtonWithText("Items", Constants.ENCOUNTER_MENU_BUTTON_WIDTH, Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2), this.openBag),
+                this.createButtonWithText("Special", 0, Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT, this.useSpecial),
+                this.createButtonWithText("Flee", Constants.ENCOUNTER_MENU_BUTTON_WIDTH, Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT, this.flee)
+            ];
         };
 
         private createAttacksMenu() {
@@ -76,13 +81,13 @@ namespace States {
             let itemsToShow = this.items.slice(this.currentItemsPage * 5, this.numberOfItemsPerPage);
             this.itemPaginationPreviousButton = this.createButtonWithTextAndImage("",
                 Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 3,
-                ((itemsToShow.length -1) * Constants.ENCOUNTER_MENU_BUTTON_HEIGHT) + Constants.ENCOUNTER_MENU_BUTTON_HEIGHT,
+                ((itemsToShow.length - 1) * Constants.ENCOUNTER_MENU_BUTTON_HEIGHT) + Constants.ENCOUNTER_MENU_BUTTON_HEIGHT,
                 this.previousItems,
                 "paginationPrevious",
                 false);
             this.itemPaginationNextButton = this.createButtonWithTextAndImage("",
                 (Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 3) + 150,
-                ((itemsToShow.length -1) * Constants.ENCOUNTER_MENU_BUTTON_HEIGHT) + Constants.ENCOUNTER_MENU_BUTTON_HEIGHT,
+                ((itemsToShow.length - 1) * Constants.ENCOUNTER_MENU_BUTTON_HEIGHT) + Constants.ENCOUNTER_MENU_BUTTON_HEIGHT,
                 this.nextItems,
                 "paginationNext",
                 false);
@@ -90,7 +95,7 @@ namespace States {
             this.itemPaginationNextButton.visible = false
         }
 
-        private createAttackButton(index:number, x:number, y:number, clickFunction:any) {
+        private createAttackButton(index: number, x: number, y: number, clickFunction: any) {
             let text = "-";
             if (this.hasAttackInSlot(index)) {
                 text = this.attacks[index].name;
@@ -101,15 +106,15 @@ namespace States {
             return createdButton;
         }
 
-        private hasAttackInSlot(index:number) {
+        private hasAttackInSlot(index: number) {
             return this.attacks.length - 1 >= index;
         };
 
-        private createButtonWithText(buttonText:string, x:number, y:number, clickFunction:any):Phaser.Button {
+        private createButtonWithText(buttonText: string, x: number, y: number, clickFunction: any): Phaser.Button {
             return this.createButtonWithTextAndImage(buttonText, x, y, clickFunction, "button", true);
         };
 
-        private createButtonWithTextAndImage(buttonText:string, x:number, y:number, clickFunction:any, buttonImage: string, hasStates: boolean):Phaser.Button {
+        private createButtonWithTextAndImage(buttonText: string, x: number, y: number, clickFunction: any, buttonImage: string, hasStates: boolean): Phaser.Button {
             let button = hasStates ? this.state.game.add.button(x, y, buttonImage, clickFunction, this, 0, 1, 2, 3) :
                 this.state.game.add.button(x, y, buttonImage, clickFunction, this, 0);
 
@@ -159,7 +164,7 @@ namespace States {
             this.attack(this.attacks[3]);
         }
 
-        private attack(attack:any) {
+        private attack(attack: any) {
             console.log("ATTACK! " + attack.name + " " + attack.power + "DMG");
         }
 
@@ -183,7 +188,7 @@ namespace States {
         private createCurrentShownItems() {
             var start = this.currentItemsPage * 5;
             let itemsToShow = this.items.slice(start, start + this.numberOfItemsPerPage);
-            for(let i = 0; i< itemsToShow.length; i++) {
+            for (let i = 0; i < itemsToShow.length; i++) {
                 let createdButton = this.createButtonWithText(itemsToShow[i].name,
                     Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 3,
                     i * Constants.ENCOUNTER_MENU_BUTTON_HEIGHT,
@@ -209,7 +214,7 @@ namespace States {
         }
 
         private destroyItemsMenu() {
-            this.currentlyShownItems.forEach(function(item) {
+            this.currentlyShownItems.forEach(function (item) {
                 item.destroy();
             });
             this.currentlyShownItems = [];
@@ -219,7 +224,7 @@ namespace States {
 
         private useItem(itemName: string) {
             //TODO: should call the 'use' method on the item object and remove it from the bag afterwards
-            return function() {
+            return function () {
                 console.log("USED " + itemName);
             }
         }

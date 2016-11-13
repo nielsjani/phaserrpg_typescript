@@ -1,4 +1,4 @@
-/// <reference path="../src/classes/TextItem.ts" />
+/// <reference path="../src/classes/items/TextItem.ts" />
 /// <reference path="./config/typings/jasmine.d.ts" />
 import TextItem = Classes.TextItem;
 describe('TextItem', () => {

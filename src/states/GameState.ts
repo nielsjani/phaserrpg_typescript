@@ -3,6 +3,7 @@
 
 namespace States {
     import TextDisplay = Classes.TextDisplay;
+    import MapCreator = Classes.Util.MapCreator;
 
     export class GameState extends Phaser.State {
         mapname:string;
@@ -24,7 +25,7 @@ namespace States {
 
         create() {
             //TEMPORARY
-            this.game.state.start("EncounterState", true, false, null, this, null);
+            this.game.state.start("EncounterState", true, false, null, this, this.player);
 
 
             this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
@@ -32,7 +33,7 @@ namespace States {
             this.cursors = this.input.keyboard.createCursorKeys();
             this.spacebar = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
-            new Classes.Util.MapCreator().createMap(this);
+            new MapCreator().createMap(this);
             this.addPlayerAndCamera();
 
         }
@@ -58,4 +59,3 @@ namespace States {
         }
     }
 }
-

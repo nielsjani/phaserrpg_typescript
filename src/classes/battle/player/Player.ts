@@ -3,6 +3,7 @@ namespace Classes {
 
         idlePoses: Map<string, number>;
         lastDirection: string;
+        playerStats: Stats;
 
         constructor(public state: States.GameState,public x: number,public y: number,public imageRef: string) {
             super(state.game, x, y, imageRef);
@@ -15,6 +16,18 @@ namespace Classes {
             this.animations.add('up', [9, 10, 11], 10, true);
             this.state.physics.arcade.enable(this);
             this.createIdlePoses();
+            this.createPlayerStats();
+        }
+
+        private createPlayerStats() {
+            this.playerStats = new StatsBuilder().stats()
+                .withLevel(1)
+                .withAttack(10)
+                .withDefense(10)
+                .withSpeed(10)
+                .withMaxhealth(100)
+                .withMaxmana(10)
+                .build();
         }
 
         createIdlePoses() {

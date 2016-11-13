@@ -25,6 +25,7 @@ namespace States {
             this.load.spritesheet("button", "images/menus/buttonBig.png", 200, 100);
             this.load.spritesheet("paginationPrevious", "images/menus/paginationPrevious.png", 50, 50);
             this.load.spritesheet("paginationNext", "images/menus/paginationNext.png", 50, 50);
+            this.load.spritesheet("player_backsprite", "images/encounter/player_backsprite.png", 200,200);
         }
 
         create() {
