@@ -529,7 +529,7 @@ var Classes;
         getCustomProperties() {
             return {
                 text: this.text,
-                collides: true,
+                collides: this.collides,
                 handleOverlap: this.handleOverlap
             };
         }

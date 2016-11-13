@@ -21,13 +21,17 @@ var gnf = require('gulp-npm-files');
 var karma = require("karma");
 
 var DIST_PATH = './src/dist/';
+var GAME_ES5 = './src/dist/game.js';
 var BUILD_PATH = './build';
 var SCRIPTS_PATH = BUILD_PATH + '/scripts';
 var SOURCE_PATH = './src';
 var STATIC_PATH = './static';
+
 var APP_PATH = './app/**/*.js';
 var APP_HTML_PATH = './app/**/*.html';
+
 var TEST_PATH = "./test/**/*.js";
+var TEST_PATH_TRANSPILED = "./test/tstranspiled/*.js";
 var TEST_DIST_PATH = "./src/dist/test";
 
 
@@ -125,12 +129,11 @@ function serve() {
         server: {
             baseDir: BUILD_PATH
         },
-        open: true // Change it to true if you wish to allow Browsersync to open a browser window.
+        open: true // Browsersync opens a browser window.
     };
 
     browserSync(options);
 
-    // Watches for changes in files inside the './src' folder.
     gulp.watch(SOURCE_PATH + '/**/*.js', ['watch-js']).on('change', function () {
         onlyDeleteWorkingFiles = true;
     });
@@ -139,11 +142,11 @@ function serve() {
     });
     gulp.watch(APP_HTML_PATH, ['watch-js']);
 
-    // Watches for changes in files inside the './static' folder. Also sets 'keepFiles' to true (see cleanBuild()).
     gulp.watch(STATIC_PATH + '/**/*', ['watch-static']).on('change', function () {
         keepFiles = true;
     });
 
+    gulp.watch([TEST_PATH_TRANSPILED, GAME_ES5], ['runtest_watch']);
 }
 
 function buildtest() {
@@ -160,30 +163,31 @@ function buildtest() {
         .pipe(gulp.dest(TEST_DIST_PATH));
 }
 
-function unitTest(singleRun, callback) {
+function unitTest(singleRun) {
     console.log("DIRNAME:");
     console.log(__dirname);
     var server = new karma.Server({
         configFile: `${__dirname}/test/config/karma.config.js`,
-        singleRun
+        singleRun: singleRun
     });
 
     server.on('browser_error', function (browser, err) {
         throw err;
     });
 
-    server.on('run_complete', function (browsers, results) {
-        if (results.failed) {
-            throw new Error('Karma: Tests Failed');
-        }
-        callback();
+    server.on('run_complete', function () {
+        return;
     });
 
     server.start();
 }
 
-gulp.task("runtest", function (callback) {
-    unitTest(true, callback);
+gulp.task("runtest", ["buildtest"], function () {
+    unitTest(true);
+});
+
+gulp.task("runtest_watch", ["buildtest"], function () {
+    unitTest(false);
 });
 
 gulp.task('buildtest', buildtest);

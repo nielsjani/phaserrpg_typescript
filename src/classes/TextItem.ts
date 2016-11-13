@@ -1,9 +1,9 @@
 namespace Classes {
-    import TextDisplay =Classes.TextDisplay;
+    import TextDisplay = Classes.TextDisplay;
     import GameState = States.GameState;
 
     export class TextItem implements Classes.Item {
-        collides:boolean;
+        collides: boolean;
 
         constructor(public x: number, public y: number, public sprite: string, public text: string) {
             this.x = x;
@@ -16,7 +16,7 @@ namespace Classes {
         getCustomProperties() {
             return {
                 text: this.text,
-                collides: true,
+                collides: this.collides,
                 handleOverlap: this.handleOverlap
             }
         }

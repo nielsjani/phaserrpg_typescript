@@ -12,5 +12,22 @@ describe('TextItem', () => {
     it('Should collide', () => {
         var textItem: TextItem = new TextItem(5,6,"bla", "bli");
         expect(textItem.collides).toBeTruthy();
+        expect(textItem.x).toBe(5);
+    });
+
+    it('Should have x', () => {
+
+        var textItem: TextItem = new TextItem(5,6,"bla", "bli");
+        expect(textItem.x).toBe(5);
+    });
+
+    it('Should have y', () => {
+        var textItem: TextItem = new TextItem(5,6,"bla", "bli");
+        expect(textItem.y).toBe(6);
+    });
+
+    it('Should not have z', () => {
+        var textItem: TextItem = new TextItem(5,6,"bla", "bli");
+        expect(textItem.sprite).toBe("bla");
     });
 });
