@@ -6,12 +6,14 @@ namespace States {
     import TextDisplay = Classes.TextDisplay;
     import Player = Classes.Player;
     import ArraySet = Phaser.ArraySet;
+    import Enemy = Classes.Enemy;
+    import Rat = Classes.Rat;
 
     export class EncounterState extends Phaser.State {
         //TODO: attacks: field on player
         private attacks: any[];
         private items: any[];
-        private possibleEnemies: string[];
+        private possibleEnemies: Enemy[];
         private state: Phaser.State;
         private player: Player;
 
@@ -29,7 +31,7 @@ namespace States {
         //TODO: information textbox with text that describes when something has happened
         //TODO: turn-based
 
-        init(possibleEnemies: string[], state: Phaser.State, player: Player) {
+        init(possibleEnemies: Enemy[], state: Phaser.State, player: Player) {
             this.possibleEnemies = possibleEnemies;
             this.state = state;
             this.player = player;
@@ -49,6 +51,9 @@ namespace States {
             ];
 
             this.add.sprite(200,200, "player_backsprite");
+            this.add.sprite(10,10, this.possibleEnemies[0].getImageKey());
+            this.add.sprite(290,10, this.possibleEnemies[0].getImageKey());
+            this.add.sprite(570,10, this.possibleEnemies[0].getImageKey());
         }
 
 

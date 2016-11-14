@@ -1,6 +1,11 @@
 namespace Classes {
     export abstract class Enemy {
-        constructor(private stats: Stats, private imageKey: string) {
+        stats: Stats;
+        private imageKey: string;
+
+        constructor(stats: Stats, imageKey: string) {
+            this.stats = stats;
+            this.imageKey = imageKey;
         }
 
         public abstract performTurn(encounterState: States.EncounterState): void;

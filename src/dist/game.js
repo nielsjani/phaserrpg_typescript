@@ -17,6 +17,7 @@ var States;
             this.load.spritesheet("paginationPrevious", "images/menus/paginationPrevious.png", 50, 50);
             this.load.spritesheet("paginationNext", "images/menus/paginationNext.png", 50, 50);
             this.load.spritesheet("player_backsprite", "images/encounter/player_backsprite.png", 200, 200);
+            this.load.spritesheet("rat", "images/encounter/rat.png", 200, 200);
         }
         create() {
             this.game.state.start("GameState", true, false, this.map, this.tileset);
@@ -77,9 +78,45 @@ var Classes;
         Util.MapCreator = MapCreator;
     })(Util = Classes.Util || (Classes.Util = {}));
 })(Classes || (Classes = {}));
+var Classes;
+(function (Classes) {
+    class Enemy {
+        constructor(stats, imageKey) {
+            this.stats = stats;
+            this.imageKey = imageKey;
+        }
+        getImageKey() {
+            return this.imageKey;
+        }
+    }
+    Classes.Enemy = Enemy;
+})(Classes || (Classes = {}));
+var Classes;
+(function (Classes) {
+    class Rat extends Classes.Enemy {
+        constructor() {
+            super(Rat.createRatStats(), "rat");
+        }
+        static createRatStats() {
+            return new Classes.StatsBuilder()
+                .stats()
+                .withMaxhealth(100)
+                .withMaxmana(0)
+                .withAttack(1)
+                .withDefense(2)
+                .withSpeed(5)
+                .build();
+        }
+        performTurn(encounterState) {
+        }
+        ;
+    }
+    Classes.Rat = Rat;
+})(Classes || (Classes = {}));
 var States;
 (function (States) {
     var MapCreator = Classes.Util.MapCreator;
+    var Rat = Classes.Rat;
     class GameState extends Phaser.State {
         constructor(...args) {
             super(...args);
@@ -90,7 +127,7 @@ var States;
             this.tileset = tileset;
         }
         create() {
-            this.game.state.start("EncounterState", true, false, null, this, this.player);
+            this.game.state.start("EncounterState", true, false, [new Rat()], this, this.player);
             this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
             this.cursors = this.input.keyboard.createCursorKeys();
             this.spacebar = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -160,6 +197,9 @@ var States;
                 { name: "Eleven", amount: 1 }
             ];
             this.add.sprite(200, 200, "player_backsprite");
+            this.add.sprite(10, 10, this.possibleEnemies[0].getImageKey());
+            this.add.sprite(290, 10, this.possibleEnemies[0].getImageKey());
+            this.add.sprite(570, 10, this.possibleEnemies[0].getImageKey());
         }
         create() {
             this.createBaseMenu();
@@ -376,31 +416,6 @@ var Classes;
         }
     }
     Classes.StatsBuilder = StatsBuilder;
-})(Classes || (Classes = {}));
-var Classes;
-(function (Classes) {
-    class Enemy {
-        constructor(stats, imageKey) {
-            this.stats = stats;
-            this.imageKey = imageKey;
-        }
-        getImageKey() {
-            return this.imageKey;
-        }
-    }
-    Classes.Enemy = Enemy;
-})(Classes || (Classes = {}));
-var Classes;
-(function (Classes) {
-    class Rat extends Classes.Enemy {
-        constructor(stats, imageKey) {
-            super(stats, imageKey);
-        }
-        performTurn(encounterState) {
-        }
-        ;
-    }
-    Classes.Rat = Rat;
 })(Classes || (Classes = {}));
 var Classes;
 (function (Classes) {

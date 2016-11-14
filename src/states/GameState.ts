@@ -1,9 +1,11 @@
 ///<reference path="../../node_modules/phaser/typescript/phaser.d.ts"/>
 ///<reference path="../classes/util/MapCreator.ts"/>
+///<reference path="../classes/battle/enemies/Rat.ts"/>
 
 namespace States {
     import TextDisplay = Classes.TextDisplay;
     import MapCreator = Classes.Util.MapCreator;
+    import Rat = Classes.Rat;
 
     export class GameState extends Phaser.State {
         mapname:string;
@@ -25,7 +27,7 @@ namespace States {
 
         create() {
             //TEMPORARY
-            this.game.state.start("EncounterState", true, false, null, this, this.player);
+            this.game.state.start("EncounterState", true, false, [new Rat()], this, this.player);
 
 
             this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
