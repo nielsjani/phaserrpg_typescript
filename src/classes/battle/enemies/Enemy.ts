@@ -1,3 +1,6 @@
+///<reference path="../common/Stats.ts"/>
+///<reference path="../../../states/EncounterState.ts"/>
+
 namespace Classes {
     export abstract class Enemy {
         stats: Stats;

@@ -1,3 +1,7 @@
+///<reference path="../items/TextDisplay.ts"/>
+///<reference path="../../states/GameState.ts"/>
+///<reference path="../items/Item.ts"/>
+
 namespace Classes {
     import TextDisplay = Classes.TextDisplay;
     import GameState = States.GameState;

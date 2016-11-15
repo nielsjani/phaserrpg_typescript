@@ -1,4 +1,7 @@
 ///<reference path="../../states/GameState.ts"/>
+///<reference path="../items/Item.ts"/>
+///<reference path="../items/DoorItem.ts"/>
+///<reference path="../items/EncounterTrigger.ts"/>
 
 namespace Classes.Util {
     import GameState = States.GameState

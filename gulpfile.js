@@ -146,7 +146,7 @@ function serve() {
         keepFiles = true;
     });
 
-    gulp.watch([TEST_PATH_TRANSPILED, GAME_ES5], ['runtest_watch']);
+    // gulp.watch([TEST_PATH_TRANSPILED, GAME_ES5], ['runtest_watch']);
 }
 
 function buildtest() {
