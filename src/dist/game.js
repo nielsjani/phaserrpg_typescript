@@ -248,6 +248,21 @@ var Classes;
             this.state.physics.arcade.enable(this);
             this.createIdlePoses();
             this.createPlayerStats();
+            this.attacks = [{ name: "Bite", power: 10 }, { name: "Scratch", power: 15 }, { name: "Weep", power: 0 }];
+            this.items = [
+                { name: "Potion", amount: 5 },
+                { name: "Smoke bomb", amount: 2 },
+                { name: "X marker", amount: 1 },
+                { name: "X attacker", amount: 1 },
+                { name: "X defender", amount: 1 },
+                { name: "Pokéball", amount: 1 },
+                { name: "Link's sword", amount: 1 },
+                { name: "???", amount: 1 },
+                { name: "Mattress", amount: 1 },
+                { name: "Bowl of pee", amount: 1 },
+                { name: "Eleven", amount: 1 }
+            ];
+            this.orderItems();
         }
         createPlayerStats() {
             this.playerStats = new Classes.StatsBuilder().stats()
@@ -295,6 +310,21 @@ var Classes;
                     this.frame = this.lastDirection ? this.idlePoses.get(this.lastDirection) : 7;
                 }
             }
+        }
+        hasAttackInSlot(index) {
+            return this.attacks.length - 1 >= index;
+        }
+        ;
+        attack(index) {
+            var playerAttacks = this.attacks;
+            return function () {
+                console.log("ATTACK! " + playerAttacks[index].name + " " + playerAttacks[index].power + "DMG");
+            };
+        }
+        orderItems() {
+            this.items.sort(function (item, item2) {
+                return item.name > item2.name ? 1 : -1;
+            });
         }
     }
     Classes.Player = Player;
@@ -381,204 +411,149 @@ var Classes;
 })(Classes || (Classes = {}));
 var States;
 (function (States) {
-    var Constants = Classes.Util.Constants;
     var ButtonBuilder = Classes.ButtonBuilder;
-    class EncounterState extends Phaser.State {
-        constructor(...args) {
-            super(...args);
-            this.attackButtons = [];
+    var Constants = Classes.Util.Constants;
+    class EncounterStateMenuManager {
+        constructor(state) {
+            this.state = state;
             this.currentItemsPage = 0;
             this.numberOfItemsPerPage = 5;
             this.currentlyShownItems = [];
+            this.encounterState = state;
         }
-        init(possibleEnemies, state, player) {
-            this.possibleEnemies = possibleEnemies;
-            this.state = state;
-            this.player = player;
-            this.attacks = [{ name: "Bite", power: 10 }, { name: "Scratch", power: 15 }, { name: "Weep", power: 0 }];
-            this.items = [
-                { name: "Potion", amount: 5 },
-                { name: "Smoke bomb", amount: 2 },
-                { name: "X marker", amount: 1 },
-                { name: "X attacker", amount: 1 },
-                { name: "X defender", amount: 1 },
-                { name: "Pokéball", amount: 1 },
-                { name: "Link's sword", amount: 1 },
-                { name: "???", amount: 1 },
-                { name: "Mattress", amount: 1 },
-                { name: "Bowl of pee", amount: 1 },
-                { name: "Eleven", amount: 1 }
-            ];
-            this.add.sprite(200, 200, "player_backsprite");
-            this.add.sprite(10, 10, this.possibleEnemies[0].getImageKey());
-            this.add.sprite(290, 10, this.possibleEnemies[0].getImageKey());
-            this.add.sprite(570, 10, this.possibleEnemies[0].getImageKey());
-        }
-        create() {
-            this.createBaseMenu();
-            this.createAttacksMenu();
-            this.orderItems();
-            this.createItemPaginationButtons();
-        }
-        createBaseMenu() {
+        createBaseMenu(specialButtonFunction, fleeButtonFunction) {
             this.mainMenu = [
                 ButtonBuilder.statefullButton()
                     .withText("Attack")
                     .withX(0)
                     .withY(Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2))
-                    .withState(this)
-                    .withClickFunction(this.openAttacksMenu)
+                    .withState(this.encounterState)
+                    .withClickFunction(this.openAttacksMenu())
                     .build(),
                 ButtonBuilder.statefullButton()
                     .withText("Items")
                     .withX(Constants.ENCOUNTER_MENU_BUTTON_WIDTH)
                     .withY(Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2))
-                    .withState(this)
-                    .withClickFunction(this.openBag)
+                    .withState(this.encounterState)
+                    .withClickFunction(this.openBag())
                     .build(),
                 ButtonBuilder.statefullButton()
                     .withText("Special")
                     .withX(0)
                     .withY(Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT)
-                    .withState(this)
-                    .withClickFunction(this.useSpecial)
+                    .withState(this.encounterState)
+                    .withClickFunction(this.useSpecial(specialButtonFunction))
                     .build(),
                 ButtonBuilder.statefullButton()
                     .withText("Flee")
                     .withX(Constants.ENCOUNTER_MENU_BUTTON_WIDTH)
                     .withY(Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT)
-                    .withState(this)
-                    .withClickFunction(this.flee)
+                    .withState(this.encounterState)
+                    .withClickFunction(fleeButtonFunction)
                     .build()
             ];
         }
         ;
+        showAttacks() {
+            this.attackButtons.forEach(btn => btn.visible = true);
+        }
+        ;
+        hideAttacks() {
+            this.attackButtons.forEach(btn => btn.visible = false);
+        }
+        ;
+        openAttacksMenu() {
+            return () => {
+                this.destroyItemsMenu();
+                this.showAttacks();
+            };
+        }
         createAttacksMenu() {
             this.attackButtons = [
                 ButtonBuilder.statefullButton()
                     .withText(this.determineAttackButtonText(0))
                     .withX(Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 2)
                     .withY(Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2))
-                    .withState(this)
-                    .withClickFunction(this.attack(this.attacks[0]))
+                    .withState(this.encounterState)
+                    .withClickFunction(this.encounterState.player.attack(0))
                     .build(),
                 ButtonBuilder.statefullButton()
                     .withText(this.determineAttackButtonText(1))
                     .withX(Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 3)
                     .withY(Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2))
-                    .withState(this)
-                    .withClickFunction(this.attack(this.attacks[1]))
+                    .withState(this.encounterState)
+                    .withClickFunction(this.encounterState.player.attack(1))
                     .build(),
                 ButtonBuilder.statefullButton()
                     .withText(this.determineAttackButtonText(2))
                     .withX(Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 2)
                     .withY(Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT)
-                    .withState(this)
-                    .withClickFunction(this.attack(this.attacks[2]))
+                    .withState(this.encounterState)
+                    .withClickFunction(this.encounterState.player.attack(2))
                     .build(),
                 ButtonBuilder.statefullButton()
                     .withText(this.determineAttackButtonText(3))
                     .withX(Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 3)
                     .withY(Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT)
-                    .withState(this)
-                    .withClickFunction(this.attack(this.attacks[3]))
+                    .withState(this.encounterState)
+                    .withClickFunction(this.encounterState.player.attack(3))
                     .build()
             ];
             this.attackButtons.forEach(function (button, index) {
-                button.inputEnabled = this.hasAttackInSlot(index);
+                button.inputEnabled = this.encounterState.player.hasAttackInSlot(index);
                 button.visible = false;
             }, this);
         }
-        ;
+        determineAttackButtonText(index) {
+            if (this.encounterState.player.hasAttackInSlot(index)) {
+                return this.encounterState.player.attacks[index].name;
+            }
+            return "-";
+        }
+        openBag() {
+            return () => {
+                this.hideAttacks();
+                this.createCurrentShownItems();
+                this.itemPaginationNextButton.visible = this.encounterState.getAllPlayerItems().length > this.numberOfItemsPerPage;
+            };
+        }
         createItemPaginationButtons() {
-            let itemsToShow = this.items.slice(this.currentItemsPage * 5, this.numberOfItemsPerPage);
             this.itemPaginationPreviousButton =
                 ButtonBuilder.statelessButton()
                     .withX(Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 3)
-                    .withY(((itemsToShow.length - 1) * Constants.ENCOUNTER_MENU_BUTTON_HEIGHT) + Constants.ENCOUNTER_MENU_BUTTON_HEIGHT)
-                    .withState(this)
-                    .withClickFunction(this.previousItems)
+                    .withY(((this.numberOfItemsPerPage - 1) * Constants.ENCOUNTER_MENU_BUTTON_HEIGHT) + Constants.ENCOUNTER_MENU_BUTTON_HEIGHT)
+                    .withState(this.encounterState)
+                    .withClickFunction(this.previousItems())
                     .withImageKey("paginationPrevious")
                     .build();
             this.itemPaginationNextButton =
                 ButtonBuilder.statelessButton()
                     .withX((Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 3) + 150)
-                    .withY(((itemsToShow.length - 1) * Constants.ENCOUNTER_MENU_BUTTON_HEIGHT) + Constants.ENCOUNTER_MENU_BUTTON_HEIGHT)
-                    .withState(this)
-                    .withClickFunction(this.nextItems)
+                    .withY(((this.numberOfItemsPerPage - 1) * Constants.ENCOUNTER_MENU_BUTTON_HEIGHT) + Constants.ENCOUNTER_MENU_BUTTON_HEIGHT)
+                    .withState(this.encounterState)
+                    .withClickFunction(this.nextItems())
                     .withImageKey("paginationNext")
                     .build();
             this.itemPaginationPreviousButton.visible = false;
             this.itemPaginationNextButton.visible = false;
         }
-        determineAttackButtonText(index) {
-            if (this.hasAttackInSlot(index)) {
-                return this.attacks[index].name;
-            }
-            return "-";
-        }
-        hasAttackInSlot(index) {
-            return this.attacks.length - 1 >= index;
-        }
-        ;
-        openAttacksMenu() {
-            this.destroyItemsMenu();
-            this.showAttacks();
-        }
-        showAttacks() {
-            this.attackButtons.forEach(function (btn) {
-                btn.visible = true;
-            });
-        }
-        ;
-        hideAttacks() {
-            this.attackButtons.forEach(function (btn) {
-                btn.visible = false;
-            });
-        }
-        ;
-        attack(attack) {
-            return function () {
-                console.log("ATTACK! " + attack.name + " " + attack.power + "DMG");
+        previousItems() {
+            return () => {
+                this.destroyItemsMenu();
+                this.currentItemsPage--;
+                this.createCurrentShownItems();
+                this.itemPaginationNextButton.visible = true;
+                this.itemPaginationPreviousButton.visible = this.currentItemsPage !== 0;
             };
         }
-        orderItems() {
-            this.items.sort(function (item, item2) {
-                return item.name > item2.name ? 1 : -1;
-            });
-        }
-        openBag() {
-            this.hideAttacks();
-            this.createCurrentShownItems();
-            this.itemPaginationNextButton.visible = this.items.length > this.numberOfItemsPerPage;
-        }
-        createCurrentShownItems() {
-            var start = this.currentItemsPage * 5;
-            let itemsToShow = this.items.slice(start, start + this.numberOfItemsPerPage);
-            for (let i = 0; i < itemsToShow.length; i++) {
-                let createdButton = ButtonBuilder.statefullButton()
-                    .withText(itemsToShow[i].name)
-                    .withX(Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 3)
-                    .withY(i * Constants.ENCOUNTER_MENU_BUTTON_HEIGHT)
-                    .withState(this)
-                    .withClickFunction(this.useItem(itemsToShow[i].name))
-                    .build();
-                this.currentlyShownItems.push(createdButton);
-            }
-        }
-        previousItems() {
-            this.destroyItemsMenu();
-            this.currentItemsPage--;
-            this.createCurrentShownItems();
-            this.itemPaginationNextButton.visible = true;
-            this.itemPaginationPreviousButton.visible = this.currentItemsPage !== 0;
-        }
         nextItems() {
-            this.destroyItemsMenu();
-            this.currentItemsPage++;
-            this.createCurrentShownItems();
-            this.itemPaginationPreviousButton.visible = true;
-            this.itemPaginationNextButton.visible = this.items.length > (this.currentItemsPage * 5) + this.numberOfItemsPerPage;
+            return () => {
+                this.destroyItemsMenu();
+                this.currentItemsPage++;
+                this.createCurrentShownItems();
+                this.itemPaginationPreviousButton.visible = true;
+                this.itemPaginationNextButton.visible = this.encounterState.getAllPlayerItems().length > (this.currentItemsPage * 5) + this.numberOfItemsPerPage;
+            };
         }
         destroyItemsMenu() {
             this.currentlyShownItems.forEach(function (item) {
@@ -588,20 +563,65 @@ var States;
             this.itemPaginationNextButton.visible = false;
             this.itemPaginationPreviousButton.visible = false;
         }
-        useItem(itemName) {
+        createCurrentShownItems() {
+            var start = this.currentItemsPage * 5;
+            let itemsToShow = this.encounterState.getPlayerItems(start, start + this.numberOfItemsPerPage);
+            for (let i = 0; i < itemsToShow.length; i++) {
+                let createdButton = ButtonBuilder.statefullButton()
+                    .withText(itemsToShow[i].name)
+                    .withX(Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 3)
+                    .withY(i * Constants.ENCOUNTER_MENU_BUTTON_HEIGHT)
+                    .withState(this.encounterState)
+                    .withClickFunction(this.useItem(itemsToShow[i]))
+                    .build();
+                this.currentlyShownItems.push(createdButton);
+            }
+        }
+        useItem(item) {
             return function () {
-                console.log("USED " + itemName);
+                console.log("USED " + item.name);
             };
         }
+        useSpecial(specialButtonFunction) {
+            return () => {
+                this.hideAttacks();
+                this.destroyItemsMenu();
+                specialButtonFunction();
+            };
+        }
+    }
+    States.EncounterStateMenuManager = EncounterStateMenuManager;
+})(States || (States = {}));
+var States;
+(function (States) {
+    var EncounterStateMenuManager = States.EncounterStateMenuManager;
+    class EncounterState extends Phaser.State {
+        init(possibleEnemies, state, player) {
+            this.possibleEnemies = possibleEnemies;
+            this.state = state;
+            this.player = player;
+            this.add.sprite(200, 200, "player_backsprite");
+            this.add.sprite(10, 10, this.possibleEnemies[0].getImageKey());
+            this.add.sprite(290, 10, this.possibleEnemies[0].getImageKey());
+            this.add.sprite(570, 10, this.possibleEnemies[0].getImageKey());
+        }
+        create() {
+            this.encounterStateMenuManager = new EncounterStateMenuManager(this);
+            this.encounterStateMenuManager.createBaseMenu(this.useSpecial, this.flee);
+            this.encounterStateMenuManager.createAttacksMenu();
+            this.encounterStateMenuManager.createItemPaginationButtons();
+        }
         useSpecial() {
-            this.hideAttacks();
-            this.destroyItemsMenu();
             console.log("I'm special!");
         }
         flee() {
             this.game.state.start('LoadState', false, false, "mymap1", "MyTileset");
         }
-        update() {
+        getPlayerItems(start, end) {
+            return this.player.items.slice(start, end);
+        }
+        getAllPlayerItems() {
+            return this.player.items;
         }
     }
     States.EncounterState = EncounterState;
@@ -656,12 +676,12 @@ var States;
             this.tileset = tileset;
         }
         create() {
-            this.game.state.start("EncounterState", true, false, [new Rat()], this, this.player);
             this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
             this.cursors = this.input.keyboard.createCursorKeys();
             this.spacebar = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
             new MapCreator().createMap(this);
             this.addPlayerAndCamera();
+            this.game.state.start("EncounterState", true, false, [new Rat()], this, this.player);
         }
         update() {
             this.physics.arcade.collide(this.player, this.collisionLayer);

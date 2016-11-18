@@ -4,6 +4,8 @@ namespace Classes {
         idlePoses: Map<string, number>;
         lastDirection: string;
         playerStats: Stats;
+        attacks: any[];
+        items: any[];
 
         constructor(public state: States.GameState,public x: number,public y: number,public imageRef: string) {
             super(state.game, x, y, imageRef);
@@ -17,6 +19,21 @@ namespace Classes {
             this.state.physics.arcade.enable(this);
             this.createIdlePoses();
             this.createPlayerStats();
+            this.attacks = [{name: "Bite", power: 10}, {name: "Scratch", power: 15}, {name: "Weep", power: 0}];
+            this.items = [
+                {name: "Potion", amount: 5},
+                {name: "Smoke bomb", amount: 2},
+                {name: "X marker", amount: 1},
+                {name: "X attacker", amount: 1},
+                {name: "X defender", amount: 1},
+                {name: "Pokéball", amount: 1},
+                {name: "Link's sword", amount: 1},
+                {name: "???", amount: 1},
+                {name: "Mattress", amount: 1},
+                {name: "Bowl of pee", amount: 1},
+                {name: "Eleven", amount: 1}
+            ];
+            this.orderItems();
         }
 
         private createPlayerStats() {
@@ -64,6 +81,23 @@ namespace Classes {
                     this.frame = this.lastDirection ? this.idlePoses.get(this.lastDirection) : 7;
                 }
             }
+        }
+
+        hasAttackInSlot(index: number) {
+            return this.attacks.length - 1 >= index;
+        };
+
+        attack(index: number) {
+            var playerAttacks = this.attacks;
+            return function() {
+                console.log("ATTACK! " + playerAttacks[index].name + " " + playerAttacks[index].power + "DMG");
+            };
+        }
+
+        private orderItems() {
+            this.items.sort(function (item, item2) {
+                return item.name > item2.name ? 1 : -1;
+            });
         }
     }
 }

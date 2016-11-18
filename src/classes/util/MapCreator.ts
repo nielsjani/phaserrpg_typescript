@@ -22,7 +22,7 @@ namespace Classes.Util {
             state.collisionLayer.resizeWorld();
         }
 
-        addItems(state:GameState) {
+        private addItems(state:GameState) {
             state.items = state.add.group();
             state.items.enableBody = true;
             let itemsFromJson = this.getItems(state);
@@ -31,7 +31,7 @@ namespace Classes.Util {
             })
         }
 
-        getItems(state:GameState) {
+        private getItems(state:GameState) {
             let items:Classes.Item[] = [];
             state.map.objects["itemlayer"].forEach((item:any) => {
                 if (item.properties.type === "text") {
@@ -47,7 +47,7 @@ namespace Classes.Util {
             return items;
         }
 
-        addToGroup(item:Classes.Item, group:Phaser.Group) {
+        private addToGroup(item:Classes.Item, group:Phaser.Group) {
             let sprite = group.create(item.x, item.y, item.sprite);
             //TODO: elk item een 'createSprite' methode geven + default implementatie op superclass?
             if(item instanceof EncounterTrigger) {

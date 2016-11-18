@@ -28,10 +28,6 @@ namespace States {
         }
 
         create() {
-            //TEMPORARY
-            this.game.state.start("EncounterState", true, false, [new Rat()], this, this.player);
-
-
             this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
 
             this.cursors = this.input.keyboard.createCursorKeys();
@@ -40,6 +36,8 @@ namespace States {
             new MapCreator().createMap(this);
             this.addPlayerAndCamera();
 
+            //TEMPORARY
+            this.game.state.start("EncounterState", true, false, [new Rat()], this, this.player);
         }
 
         update() {

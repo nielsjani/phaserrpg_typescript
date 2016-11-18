@@ -92,7 +92,7 @@ namespace Classes {
             return this;
         }
 
-        withHasStates(value: boolean) {
+        private withHasStates(value: boolean) {
             this.hasStates = value;
             return this;
         }
