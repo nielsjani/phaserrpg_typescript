@@ -182,6 +182,9 @@ var Classes;
             this.defense = defense;
             this.speed = speed;
         }
+        getPercentHealthRemaining() {
+            return (this.currenthealth / this.maxhealth) * 100;
+        }
     }
     Classes.Stats = Stats;
     class StatsBuilder {
@@ -217,19 +220,6 @@ var Classes;
         }
     }
     Classes.StatsBuilder = StatsBuilder;
-})(Classes || (Classes = {}));
-var Classes;
-(function (Classes) {
-    var Util;
-    (function (Util) {
-        var Constants;
-        (function (Constants) {
-            Constants.GAME_WIDTH = 800;
-            Constants.GAME_HEIGHT = 600;
-            Constants.ENCOUNTER_MENU_BUTTON_WIDTH = 200;
-            Constants.ENCOUNTER_MENU_BUTTON_HEIGHT = 100;
-        })(Constants = Util.Constants || (Util.Constants = {}));
-    })(Util = Classes.Util || (Classes.Util = {}));
 })(Classes || (Classes = {}));
 var Classes;
 (function (Classes) {
@@ -328,6 +318,19 @@ var Classes;
         }
     }
     Classes.Player = Player;
+})(Classes || (Classes = {}));
+var Classes;
+(function (Classes) {
+    var Util;
+    (function (Util) {
+        var Constants;
+        (function (Constants) {
+            Constants.GAME_WIDTH = 800;
+            Constants.GAME_HEIGHT = 600;
+            Constants.ENCOUNTER_MENU_BUTTON_WIDTH = 200;
+            Constants.ENCOUNTER_MENU_BUTTON_HEIGHT = 100;
+        })(Constants = Util.Constants || (Util.Constants = {}));
+    })(Util = Classes.Util || (Classes.Util = {}));
 })(Classes || (Classes = {}));
 var Classes;
 (function (Classes) {
@@ -592,27 +595,195 @@ var States;
     }
     States.EncounterStateMenuManager = EncounterStateMenuManager;
 })(States || (States = {}));
+var Classes;
+(function (Classes) {
+    class RectangleBuilder {
+        static rectangle() {
+            return new RectangleBuilder();
+        }
+        build() {
+            var bitmapRectangle = this.state.add.bitmapData(this.width, this.height);
+            bitmapRectangle.ctx.beginPath();
+            bitmapRectangle.ctx.rect(0, 0, this.width, this.height);
+            bitmapRectangle.ctx.fillStyle = this.fillColor;
+            bitmapRectangle.ctx.fill();
+            return this.state.add.sprite(this.x, this.y, bitmapRectangle);
+        }
+        withX(value) {
+            this.x = value;
+            return this;
+        }
+        withY(value) {
+            this.y = value;
+            return this;
+        }
+        withState(value) {
+            this.state = value;
+            return this;
+        }
+        withWidth(value) {
+            this.width = value;
+            return this;
+        }
+        withHeight(value) {
+            this.height = value;
+            return this;
+        }
+        withFillColor(value) {
+            this.fillColor = value;
+            return this;
+        }
+    }
+    Classes.RectangleBuilder = RectangleBuilder;
+})(Classes || (Classes = {}));
+var States;
+(function (States) {
+    var RectangleBuilder = Classes.RectangleBuilder;
+    class EncounterCharacter {
+        constructor(state, x, y, imageKey, imageHeight) {
+            this.state = state;
+            this.x = x;
+            this.y = y;
+            this.imageKey = imageKey;
+            this.imageHeight = imageHeight;
+            this.WHITE = '#FFFFFF';
+            this.RED = "#C85054";
+            this.GREEN = '#70f17b';
+            this.currentRemainingHealthColor = this.GREEN;
+            this.state.add.sprite(this.x, this.y, this.imageKey);
+            this.createTotalHealthBar();
+            this.createRemainingHealthBar(this.GREEN);
+        }
+        createRemainingHealthBar(color) {
+            this.remainingHealthBar = RectangleBuilder.rectangle()
+                .withState(this.state)
+                .withFillColor(color)
+                .withX(this.x)
+                .withY(this.y + this.imageHeight + 5)
+                .withWidth(180)
+                .withHeight(15)
+                .build();
+        }
+        createTotalHealthBar() {
+            this.totalHealthBar = RectangleBuilder.rectangle()
+                .withState(this.state)
+                .withFillColor(this.WHITE)
+                .withX(this.x)
+                .withY(this.y + this.imageHeight + 5)
+                .withWidth(180)
+                .withHeight(15)
+                .build();
+        }
+        decrementHealthBarUntil(percentage) {
+            if (this.remainingHealthBarWidthTooBig(percentage)) {
+                this.remainingHealthBar.width--;
+                this.replaceByRedBarIfSizeLessThanOrEqualThanHalf();
+            }
+        }
+        remainingHealthBarWidthTooBig(actualRemainingPercentage) {
+            var totalHealthBarWidth = this.totalHealthBar.width;
+            var remainingHealthBarWidth = this.remainingHealthBar.width;
+            return remainingHealthBarWidth > (totalHealthBarWidth / 100) * actualRemainingPercentage;
+        }
+        replaceByRedBarIfSizeLessThanOrEqualThanHalf() {
+            if (this.barWidthLessThanOrEqualThanHalf() && this.currentRemainingHealthColor === this.GREEN) {
+                var newHealthBarWidth = this.remainingHealthBar.width;
+                this.remainingHealthBar.destroy(true);
+                this.createRemainingHealthBar(this.RED);
+                this.remainingHealthBar.width = newHealthBarWidth;
+                this.currentRemainingHealthColor = this.RED;
+            }
+        }
+        barWidthLessThanOrEqualThanHalf() {
+            return this.remainingHealthBar.width <= this.totalHealthBar.width / 2;
+        }
+    }
+    States.EncounterCharacter = EncounterCharacter;
+    class EncounterCharacterBuilder {
+        static encounterCharacter() {
+            return new EncounterCharacterBuilder();
+        }
+        build() {
+            return new EncounterCharacter(this.state, this.x, this.y, this.imageKey, this.imageHeight);
+        }
+        withState(value) {
+            this.state = value;
+            return this;
+        }
+        withX(value) {
+            this.x = value;
+            return this;
+        }
+        withY(value) {
+            this.y = value;
+            return this;
+        }
+        withImageKey(value) {
+            this.imageKey = value;
+            return this;
+        }
+        withImageHeight(value) {
+            this.imageHeight = value;
+            return this;
+        }
+    }
+    States.EncounterCharacterBuilder = EncounterCharacterBuilder;
+})(States || (States = {}));
 var States;
 (function (States) {
     var EncounterStateMenuManager = States.EncounterStateMenuManager;
+    var EncounterCharacterBuilder = States.EncounterCharacterBuilder;
     class EncounterState extends Phaser.State {
         init(possibleEnemies, state, player) {
             this.possibleEnemies = possibleEnemies;
             this.state = state;
             this.player = player;
-            this.add.sprite(200, 200, "player_backsprite");
-            this.add.sprite(10, 10, this.possibleEnemies[0].getImageKey());
-            this.add.sprite(290, 10, this.possibleEnemies[0].getImageKey());
-            this.add.sprite(570, 10, this.possibleEnemies[0].getImageKey());
+        }
+        renderBattlefield() {
+            this.playerGraphic = EncounterCharacterBuilder.encounterCharacter()
+                .withState(this)
+                .withX(290)
+                .withY(210)
+                .withImageKey("player_backsprite")
+                .withImageHeight(165)
+                .build();
+            this.rat1Graphic = EncounterCharacterBuilder.encounterCharacter()
+                .withState(this)
+                .withX(10)
+                .withY(5)
+                .withImageKey(this.possibleEnemies[0].getImageKey())
+                .withImageHeight(180)
+                .build();
+            this.rat2Graphic = EncounterCharacterBuilder.encounterCharacter()
+                .withState(this)
+                .withX(290)
+                .withY(5)
+                .withImageKey(this.possibleEnemies[0].getImageKey())
+                .withImageHeight(180)
+                .build();
+            this.rat3Graphic = EncounterCharacterBuilder.encounterCharacter()
+                .withState(this)
+                .withX(570)
+                .withY(5)
+                .withImageKey(this.possibleEnemies[0].getImageKey())
+                .withImageHeight(180)
+                .build();
         }
         create() {
             this.encounterStateMenuManager = new EncounterStateMenuManager(this);
-            this.encounterStateMenuManager.createBaseMenu(this.useSpecial, this.flee);
+            this.encounterStateMenuManager.createBaseMenu(this.useSpecial(this), this.flee);
             this.encounterStateMenuManager.createAttacksMenu();
             this.encounterStateMenuManager.createItemPaginationButtons();
+            this.renderBattlefield();
         }
-        useSpecial() {
-            console.log("I'm special!");
+        update() {
+            this.playerGraphic.decrementHealthBarUntil(this.player.playerStats.getPercentHealthRemaining());
+        }
+        useSpecial(context) {
+            return () => {
+                console.log("I'm special!");
+                context.player.playerStats.currenthealth -= 10;
+            };
         }
         flee() {
             this.game.state.start('LoadState', false, false, "mymap1", "MyTileset");

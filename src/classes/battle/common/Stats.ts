@@ -1,13 +1,13 @@
 namespace Classes {
     export class Stats {
-        private level: number;
-        private maxhealth: number;
-        private currenthealth: number;
-        private maxmana: number;
-        private currentmana: number;
-        private attack: number;
-        private defense: number;
-        private speed: number;
+        level: number;
+        maxhealth: number;
+        currenthealth: number;
+        maxmana: number;
+        currentmana: number;
+        attack: number;
+        defense: number;
+        speed: number;
 
         constructor(level: number, maxhealth: number, maxmana: number, attack: number, defense: number, speed: number) {
             this.level = level;
@@ -18,6 +18,11 @@ namespace Classes {
             this.attack = attack;
             this.defense = defense;
             this.speed = speed;
+        }
+
+        //TODO: testable!
+        getPercentHealthRemaining():number {
+            return (this.currenthealth / this.maxhealth) * 100;
         }
     }
 

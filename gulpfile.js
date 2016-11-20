@@ -121,6 +121,10 @@ function build() {
             presets: ["es2015"],
             plugins: ["transform-es2015-modules-commonjs"]
         }))
+        .on("error", function () {
+            //    NIKSKSE
+            this.emit('end');
+        })
         .pipe(gulp.dest(SCRIPTS_PATH));
 }
 
@@ -134,9 +138,10 @@ function serve() {
 
     browserSync(options);
 
-    gulp.watch(SOURCE_PATH + '/**/*.js', ['watch-js']).on('change', function () {
-        onlyDeleteWorkingFiles = true;
-    });
+    gulp.watch(SOURCE_PATH + '/**/*.js', ['watch-js'])
+        .on('change', function () {
+            onlyDeleteWorkingFiles = true;
+        });
     gulp.watch(APP_PATH, ['watch-js']).on('change', function () {
         onlyDeleteWorkingFiles = true;
     });
