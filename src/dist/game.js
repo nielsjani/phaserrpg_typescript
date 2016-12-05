@@ -1,3 +1,57 @@
+var Classes;
+(function (Classes) {
+    var Util;
+    (function (Util) {
+        var Constants;
+        (function (Constants) {
+            Constants.GAME_WIDTH = 800;
+            Constants.GAME_HEIGHT = 600;
+            Constants.ENCOUNTER_MENU_BUTTON_WIDTH = 200;
+            Constants.ENCOUNTER_MENU_BUTTON_HEIGHT = 100;
+        })(Constants = Util.Constants || (Util.Constants = {}));
+    })(Util = Classes.Util || (Classes.Util = {}));
+})(Classes || (Classes = {}));
+var Classes;
+(function (Classes) {
+    class RectangleBuilder {
+        static rectangle() {
+            return new RectangleBuilder();
+        }
+        build() {
+            var bitmapRectangle = this.state.add.bitmapData(this.width, this.height);
+            bitmapRectangle.ctx.beginPath();
+            bitmapRectangle.ctx.rect(0, 0, this.width, this.height);
+            bitmapRectangle.ctx.fillStyle = this.fillColor;
+            bitmapRectangle.ctx.fill();
+            return this.state.add.sprite(this.x, this.y, bitmapRectangle);
+        }
+        withX(value) {
+            this.x = value;
+            return this;
+        }
+        withY(value) {
+            this.y = value;
+            return this;
+        }
+        withState(value) {
+            this.state = value;
+            return this;
+        }
+        withWidth(value) {
+            this.width = value;
+            return this;
+        }
+        withHeight(value) {
+            this.height = value;
+            return this;
+        }
+        withFillColor(value) {
+            this.fillColor = value;
+            return this;
+        }
+    }
+    Classes.RectangleBuilder = RectangleBuilder;
+})(Classes || (Classes = {}));
 var States;
 (function (States) {
     class LoadState extends Phaser.State {
@@ -321,19 +375,6 @@ var Classes;
 })(Classes || (Classes = {}));
 var Classes;
 (function (Classes) {
-    var Util;
-    (function (Util) {
-        var Constants;
-        (function (Constants) {
-            Constants.GAME_WIDTH = 800;
-            Constants.GAME_HEIGHT = 600;
-            Constants.ENCOUNTER_MENU_BUTTON_WIDTH = 200;
-            Constants.ENCOUNTER_MENU_BUTTON_HEIGHT = 100;
-        })(Constants = Util.Constants || (Util.Constants = {}));
-    })(Util = Classes.Util || (Classes.Util = {}));
-})(Classes || (Classes = {}));
-var Classes;
-(function (Classes) {
     var Constants = Classes.Util.Constants;
     class ButtonBuilder {
         constructor() {
@@ -595,47 +636,6 @@ var States;
     }
     States.EncounterStateMenuManager = EncounterStateMenuManager;
 })(States || (States = {}));
-var Classes;
-(function (Classes) {
-    class RectangleBuilder {
-        static rectangle() {
-            return new RectangleBuilder();
-        }
-        build() {
-            var bitmapRectangle = this.state.add.bitmapData(this.width, this.height);
-            bitmapRectangle.ctx.beginPath();
-            bitmapRectangle.ctx.rect(0, 0, this.width, this.height);
-            bitmapRectangle.ctx.fillStyle = this.fillColor;
-            bitmapRectangle.ctx.fill();
-            return this.state.add.sprite(this.x, this.y, bitmapRectangle);
-        }
-        withX(value) {
-            this.x = value;
-            return this;
-        }
-        withY(value) {
-            this.y = value;
-            return this;
-        }
-        withState(value) {
-            this.state = value;
-            return this;
-        }
-        withWidth(value) {
-            this.width = value;
-            return this;
-        }
-        withHeight(value) {
-            this.height = value;
-            return this;
-        }
-        withFillColor(value) {
-            this.fillColor = value;
-            return this;
-        }
-    }
-    Classes.RectangleBuilder = RectangleBuilder;
-})(Classes || (Classes = {}));
 var States;
 (function (States) {
     var RectangleBuilder = Classes.RectangleBuilder;
