@@ -1,34 +1,32 @@
-class TextDisplay extends Phaser.Text {
-    constructor(state, x, y, text) {
-        super(state.game, x, y, text, TextDisplay.getStyle());
-        this.setText(this.getFirstTextChunk(text));
-        this.setTextBounds(25, state.camera.y + (state.camera.height - 150), 800, 100);
+var Classes;
+(function (Classes) {
+    var AbstractTextDisplay = PhaserExpansions.AbstractTextDisplay;
+    class TextDisplay extends AbstractTextDisplay {
+        constructor(state, x, y, text) {
+            super(state.game, x, y, text, TextDisplay.getStyle());
+            this.state = state;
+            this.x = x;
+            this.y = y;
+            this.text = text;
+            this.setText(this.getFirstTextChunk(text));
+            this.setTextBounds(state.camera.x + 25, state.camera.y + (state.camera.height - 150), 800, 100);
+        }
+        getStyle() {
+            return TextDisplay.getStyle();
+        }
+        static getStyle() {
+            return {
+                align: "left",
+                font: 'bold 24pt Arial',
+                fill: 'white',
+                wordWrap: true,
+                wordWrapWidth: 750,
+                backgroundColor: "blue",
+                boundsAlignH: "center",
+                boundsAlignV: "middle"
+            };
+        }
     }
-    updateTextbox() {
-        this.setText(this.textToDisplay[this.textDisplayingPart + 1]);
-        this.setStyle(TextDisplay.getStyle());
-        this.textDisplayingPart += 1;
-    }
-    hasMore() {
-        return this.textDisplayingPart + 1 < this.textToDisplay.length;
-    }
-    static getStyle() {
-        return {
-            align: "left",
-            font: 'bold 24pt Arial',
-            fill: 'white',
-            wordWrap: true,
-            wordWrapWidth: 750,
-            backgroundColor: "blue",
-            boundsAlignH: "center",
-            boundsAlignV: "middle"
-        };
-    }
-    getFirstTextChunk(text) {
-        this.textToDisplay = text.split("#");
-        this.textDisplayingPart = 1;
-        return this.textToDisplay[this.textDisplayingPart];
-    }
-}
-exports.TextDisplay = TextDisplay;
+    Classes.TextDisplay = TextDisplay;
+})(Classes || (Classes = {}));
 //# sourceMappingURL=TextDisplay.js.map

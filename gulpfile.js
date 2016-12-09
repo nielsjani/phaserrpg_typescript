@@ -6,7 +6,7 @@ var buffer = require('gulp-buffer');
 var uglify = require('gulp-uglify');
 var exorcist = require('exorcist');
 var babelify = require('babelify');
-var browserify = require('browserify');
+var browserify_solo = require('browserify');
 var browserSync = require('browser-sync');
 var htmlmin = require("gulp-htmlmin");
 var templateCache = require("gulp-angular-templatecache");
@@ -19,9 +19,10 @@ var concat = require("gulp-concat");
 var babel = require("gulp-babel");
 var gnf = require('gulp-npm-files');
 var karma = require("karma");
+var browserify = require('gulp-browserify');
+var jasmineBrowser = require('gulp-jasmine-browser');
 
 var DIST_PATH = './src/dist/';
-var GAME_ES5 = './src/dist/game.js';
 var BUILD_PATH = './build';
 var SCRIPTS_PATH = BUILD_PATH + '/scripts';
 var SOURCE_PATH = './src';
@@ -30,8 +31,7 @@ var STATIC_PATH = './static';
 var APP_PATH = './app/**/*.js';
 var APP_HTML_PATH = './app/**/*.html';
 
-var TEST_PATH = "./test/**/*.js";
-var TEST_PATH_TRANSPILED = "./test/tstranspiled/*.js";
+var TEST_PATH = "./test/tstranspiled/test/*.js";
 var TEST_DIST_PATH = "./src/dist/test";
 
 
@@ -113,21 +113,6 @@ function copyNodeModules() {
         .pipe(gulp.dest(SCRIPTS_PATH));
 }
 
-function build() {
-    return gulp.src(DIST_PATH + "game.js")
-        .pipe(babel({
-            moduleIds: true,
-            compact: true,
-            presets: ["es2015"],
-            plugins: ["transform-es2015-modules-commonjs"]
-        }))
-        .on("error", function () {
-            //    NIKSKSE
-            this.emit('end');
-        })
-        .pipe(gulp.dest(SCRIPTS_PATH));
-}
-
 function serve() {
     var options = {
         server: {
@@ -150,57 +135,51 @@ function serve() {
     gulp.watch(STATIC_PATH + '/**/*', ['watch-static']).on('change', function () {
         keepFiles = true;
     });
-
-    // gulp.watch([TEST_PATH_TRANSPILED, GAME_ES5], ['runtest_watch']);
 }
 
 function buildtest() {
-    return gulp
-        .src(TEST_PATH)
-        .pipe(plumber())
-        .pipe(sourceMaps.init())
-        .pipe(babel({
-            moduleIds: true,
-            presets: ["es2015"],
-            plugins: ["transform-es2015-modules-systemjs"]
+    return gulp.src(TEST_PATH)
+        .pipe(browserify({
+            insertGlobals: true,
+            debug: !gulp.env.production
         }))
-        .pipe(sourceMaps.write("./"))
-        .pipe(gulp.dest(TEST_DIST_PATH));
+        .pipe(gulp.dest(TEST_DIST_PATH))
 }
 
-function unitTest(singleRun) {
-    console.log("DIRNAME:");
-    console.log(__dirname);
-    var server = new karma.Server({
-        configFile: `${__dirname}/test/config/karma.config.js`,
-        singleRun: singleRun
-    });
-
-    server.on('browser_error', function (browser, err) {
-        throw err;
-    });
-
-    server.on('run_complete', function () {
-        return;
-    });
-
-    server.start();
+function build2() {
+    return browserify_solo({
+        entries: [DIST_PATH +"/game"],
+        extensions: ['.js'],
+        debug: true,
+        insertGlobals: true
+    })
+        .bundle()
+        .pipe(source("game.js"))
+        .pipe(gulp.dest(SCRIPTS_PATH));
 }
 
-gulp.task("runtest", ["buildtest"], function () {
-    unitTest(true);
-});
-
-gulp.task("runtest_watch", ["buildtest"], function () {
-    unitTest(false);
-});
+//TODO: delete karma config + bootstrap.
+function jasmine() {
+    return gulp.src(
+        [
+            "node_modules/babel-polyfill/dist/polyfill.min.js",
+            "node_modules/es6-module-loader/dist/es6-module-loader.js",
+            "node_modules/systemjs/dist/system.js",
+            "node_modules/phaser/build/phaser.min.js",
+            TEST_DIST_PATH + "/*.js"
+        ]
+    )
+        .pipe(jasmineBrowser.specRunner())
+        .pipe(jasmineBrowser.server({port: 8888}));
+}
 
 gulp.task('buildtest', buildtest);
+gulp.task('jasmine', ['buildtest'] ,jasmine);
 gulp.task('cleanBuild', cleanBuild);
 gulp.task('copyNodeModules', copyNodeModules);
 gulp.task('copyApp', ['copyNodeModules'], copyApp);
 gulp.task('copyStatic', ['copyApp'], copyStatic);
-gulp.task('build', ['cleanBuild', 'copyStatic'], build);
+gulp.task('build', ['cleanBuild', 'copyStatic'], build2);
 gulp.task('serve', ['build'], serve);
 gulp.task('watch-js', ['build'], browserSync.reload); // Rebuilds and reloads the project when executed.
 gulp.task('watch-static', browserSync.reload);

@@ -1,29 +1,43 @@
-///<reference path="../../node_modules/phaser/typescript/phaser.d.ts"/>
-///<reference path="../classes/util/MapCreator.ts"/>
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 var States;
 (function (States) {
-    var GameState = (function (_super) {
-        __extends(GameState, _super);
-        function GameState() {
-            _super.apply(this, arguments);
+    var MapCreator = Classes.Util.MapCreator;
+    var Rat = Classes.Rat;
+    var Player = Classes.Player;
+    class GameState extends Phaser.State {
+        constructor(...args) {
+            super(...args);
+            this.displayingText = false;
         }
-        GameState.prototype.init = function (mapname, tileset) {
+        init(mapname, tileset) {
             this.mapname = mapname;
             this.tileset = tileset;
-        };
-        GameState.prototype.create = function () {
+        }
+        create() {
             this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
             this.cursors = this.input.keyboard.createCursorKeys();
             this.spacebar = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-            new Classes.Util.MapCreator().createMap(this);
-        };
-        return GameState;
-    })(Phaser.State);
+            new MapCreator().createMap(this);
+            this.addPlayerAndCamera();
+            this.game.state.start("EncounterState", true, false, [new Rat()], this, this.player);
+        }
+        update() {
+            this.physics.arcade.collide(this.player, this.collisionLayer);
+            this.physics.arcade.collide(this.player, this.items.children.filter((child) => child.customProperties.collides));
+            this.items.children.forEach((child) => {
+                if (child.overlap(this.player)) {
+                    child.customProperties.handleOverlap(this);
+                }
+                else if (child.customProperties.handleNoOverlap) {
+                    child.customProperties.handleNoOverlap(this);
+                }
+            });
+        }
+        addPlayerAndCamera() {
+            this.player = new Player(this, 100, 100, "player");
+            this.add.existing(this.player);
+            this.camera.follow(this.player);
+        }
+    }
     States.GameState = GameState;
 })(States || (States = {}));
 //# sourceMappingURL=GameState.js.map

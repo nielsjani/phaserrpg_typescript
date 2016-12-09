@@ -14,6 +14,7 @@
                 return __karma__.files.hasOwnProperty(filePath);
             })
             .filter(function isTestFile(filePath) {
+                console.log(filePath);
                 return (/^\/base\/src\/dist\/test\/(.*).spec.js$/).test(filePath);
             })
             .map(function toTestName(filePath) {

@@ -1,25 +1,30 @@
 ///<reference path="./Enemy.ts"/>
 
-namespace Classes {
-    export class Rat extends Classes.Enemy {
+import {Enemy} from "./Enemy";
+import {StatsBuilder} from "../common/Stats";
+import {EncounterState} from "../../../states/encounterstate/EncounterState";
+export class Rat extends Enemy {
 
-        constructor() {
-            super(Rat.createRatStats(), "rat");
-        }
+    constructor() {
+        super(Rat.createRatStats(), "rat");
+    }
 
-        private static createRatStats() {
-            return new StatsBuilder()
-                .stats()
-                .withMaxhealth(100)
-                .withMaxmana(0)
-                .withAttack(1)
-                .withDefense(2)
-                .withSpeed(5)
-                .build();
-        }
+    private static createRatStats() {
+        return new StatsBuilder()
+            .stats()
+            .withMaxhealth(100)
+            .withMaxmana(0)
+            .withAttack(1)
+            .withDefense(2)
+            .withSpeed(5)
+            .build();
+    }
 
-        public performTurn(encounterState: States.EncounterState): void {
-            //TODO: implement me
-        };
+    public performTurn(encounterState: EncounterState): void {
+        //TODO: implement me
+    };
+
+    public getName(): string {
+        return "Rat";
     }
 }

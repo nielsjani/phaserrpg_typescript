@@ -1,6 +1,5 @@
 /// <reference path="../src/classes/items/TextItem.ts" />
-/// <reference path="./config/typings/jasmine.d.ts" />
-import TextItem = Classes.TextItem;
+import {TextItem} from "../src/classes/items/TextItem";
 describe('TextItem', () => {
     it('Should get 5', () => {
         var myList: number[] = [2,3,4,5,6];
@@ -16,7 +15,6 @@ describe('TextItem', () => {
     });
 
     it('Should have x', () => {
-
         var textItem: TextItem = new TextItem(5,6,"bla", "bli");
         expect(textItem.x).toBe(5);
     });

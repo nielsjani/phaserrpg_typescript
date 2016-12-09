@@ -4,6 +4,9 @@
     <exclude-output />
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/build/scripts/node_modules" />
+      <excludeFolder url="file://$MODULE_DIR$/src/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/test/tstranspiled" />
     </content>
     <content url="file://$MODULE_DIR$/build/scripts/node_modules" />
     <orderEntry type="inheritedJdk" />
