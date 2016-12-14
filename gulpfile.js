@@ -22,7 +22,7 @@ var karma = require("karma");
 var browserify = require('gulp-browserify');
 var jasmineBrowser = require('gulp-jasmine-browser');
 var runSequence = require('run-sequence');
-
+var watchify = require('watchify');
 
 var DIST_PATH = './src/dist/';
 var BUILD_PATH = './build';
@@ -42,9 +42,7 @@ var onlyDeleteWorkingFiles = false;
 
 function cleanBuild() {
     if (onlyDeleteWorkingFiles) {
-        del(['build/scripts/app.min.js']);
-        del(['build/scripts/app.min.js.map']);
-        return del(['build/scripts/game.js']);
+        return del(['build/scripts/app.min.js', 'build/scripts/app.min.js.map', 'build/scripts/game.js'], {force: true});
     }
     if (!keepFiles) {
         return del(['build/images/**', 'build/scripts/**', 'build/styles/**', 'build/favicon.ico', 'build/index.html']);
@@ -122,10 +120,8 @@ function serve() {
         open: true // Browsersync opens a browser window.
     };
 
-    gulp.watch(SOURCE_PATH + '/**/*.js', ['watch-js'])
-        .on('change', function () {
-            onlyDeleteWorkingFiles = true;
-        });
+    // Watch on game files replaced by browserify's watchify plugin
+
     gulp.watch(APP_PATH, ['watch-js'])
         .on('change', function () {
             onlyDeleteWorkingFiles = true;
@@ -150,20 +146,33 @@ function buildtest() {
         .pipe(gulp.dest(TEST_DIST_PATH))
 }
 
-function build2() {
-    return browserify_solo({
+var b;
+function build2(cb) {
+    b = browserify_solo({
         entries: [DIST_PATH + "/game"],
         extensions: ['.js'],
         debug: true,
-        insertGlobals: true
-    })
-        .bundle()
+        insertGlobals: true,
+        cache: {},
+        packageCache: {},
+        plugin: [watchify]
+    });
+
+    bundle();
+
+    b.on('update', bundle);
+    cb();
+}
+
+function bundle() {
+    b.bundle()
         .on('error', function (err) {
             console.log("BUILD ERROR:");
             console.log(err.message);
         })
         .pipe(source("game.js"))
         .pipe(gulp.dest(SCRIPTS_PATH));
+    browserSync.reload();
 }
 
 //TODO: delete karma config + bootstrap.
@@ -191,6 +200,11 @@ function cleanAndCopy(cb) {
     )
 }
 
+function reloadBrowserSync(done) {
+    browserSync.reload;
+    done();
+}
+
 gulp.task('buildtest', buildtest);
 gulp.task('jasmine', ['buildtest'], jasmine);
 gulp.task('cleanBuild', cleanBuild);
@@ -200,7 +214,7 @@ gulp.task('copyStatic', copyStatic);
 gulp.task('cleanAndCopy', cleanAndCopy);
 gulp.task('build', ['cleanAndCopy'], build2);
 gulp.task('serve', ['build'], serve);
-gulp.task('watch-js', ['build'], browserSync.reload); // Rebuilds and reloads the project when executed.
-gulp.task('watch-static', browserSync.reload);
+gulp.task('watch-js', ['build'], reloadBrowserSync); // Rebuilds and reloads the project when executed.
+gulp.task('watch-static', reloadBrowserSync);
 
 gulp.task('default', ['serve']);
