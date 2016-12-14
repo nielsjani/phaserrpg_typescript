@@ -21,11 +21,13 @@ var gnf = require('gulp-npm-files');
 var karma = require("karma");
 var browserify = require('gulp-browserify');
 var jasmineBrowser = require('gulp-jasmine-browser');
+var runSequence = require('run-sequence');
+
 
 var DIST_PATH = './src/dist/';
 var BUILD_PATH = './build';
 var SCRIPTS_PATH = BUILD_PATH + '/scripts';
-var SOURCE_PATH = './src';
+var SOURCE_PATH = './src/dist/game';
 var STATIC_PATH = './static';
 
 var APP_PATH = './app/**/*.js';
@@ -42,11 +44,10 @@ function cleanBuild() {
     if (onlyDeleteWorkingFiles) {
         del(['build/scripts/app.min.js']);
         del(['build/scripts/app.min.js.map']);
-        del(['build/scripts/game.js']);
-        return;
+        return del(['build/scripts/game.js']);
     }
     if (!keepFiles) {
-        del(['build/**/*.*']);
+        return del(['build/images/**', 'build/scripts/**', 'build/styles/**', 'build/favicon.ico', 'build/index.html']);
     } else {
         keepFiles = false;
     }
@@ -121,20 +122,23 @@ function serve() {
         open: true // Browsersync opens a browser window.
     };
 
-    browserSync(options);
-
     gulp.watch(SOURCE_PATH + '/**/*.js', ['watch-js'])
         .on('change', function () {
             onlyDeleteWorkingFiles = true;
         });
-    gulp.watch(APP_PATH, ['watch-js']).on('change', function () {
-        onlyDeleteWorkingFiles = true;
-    });
+    gulp.watch(APP_PATH, ['watch-js'])
+        .on('change', function () {
+            onlyDeleteWorkingFiles = true;
+        });
     gulp.watch(APP_HTML_PATH, ['watch-js']);
 
-    gulp.watch(STATIC_PATH + '/**/*', ['watch-static']).on('change', function () {
-        keepFiles = true;
-    });
+    gulp.watch(STATIC_PATH + '/**/*', ['watch-static'])
+        .on('change', function () {
+            keepFiles = true;
+        });
+
+    return browserSync(options);
+
 }
 
 function buildtest() {
@@ -148,12 +152,16 @@ function buildtest() {
 
 function build2() {
     return browserify_solo({
-        entries: [DIST_PATH +"/game"],
+        entries: [DIST_PATH + "/game"],
         extensions: ['.js'],
         debug: true,
         insertGlobals: true
     })
         .bundle()
+        .on('error', function (err) {
+            console.log("BUILD ERROR:");
+            console.log(err.message);
+        })
         .pipe(source("game.js"))
         .pipe(gulp.dest(SCRIPTS_PATH));
 }
@@ -173,13 +181,24 @@ function jasmine() {
         .pipe(jasmineBrowser.server({port: 8888}));
 }
 
+function cleanAndCopy(cb) {
+    return runSequence(
+        "cleanBuild",
+        'copyNodeModules',
+        'copyStatic',
+        'copyApp',
+        cb
+    )
+}
+
 gulp.task('buildtest', buildtest);
-gulp.task('jasmine', ['buildtest'] ,jasmine);
+gulp.task('jasmine', ['buildtest'], jasmine);
 gulp.task('cleanBuild', cleanBuild);
 gulp.task('copyNodeModules', copyNodeModules);
-gulp.task('copyApp', ['copyNodeModules'], copyApp);
-gulp.task('copyStatic', ['copyApp'], copyStatic);
-gulp.task('build', ['cleanBuild', 'copyStatic'], build2);
+gulp.task('copyApp', copyApp);
+gulp.task('copyStatic', copyStatic);
+gulp.task('cleanAndCopy', cleanAndCopy);
+gulp.task('build', ['cleanAndCopy'], build2);
 gulp.task('serve', ['build'], serve);
 gulp.task('watch-js', ['build'], browserSync.reload); // Rebuilds and reloads the project when executed.
 gulp.task('watch-static', browserSync.reload);
