@@ -22,6 +22,7 @@ export class EncounterState extends Phaser.State {
     private rat2Graphic: EncounterCharacter;
     private rat3Graphic: EncounterCharacter;
     private notificationTextService: NotificationTextService = new NotificationTextService();
+    spacebar: Phaser.Key;
 
     //TODO: display health/MP
     //TODO: information textbox with text that describes when something has happened
@@ -73,12 +74,14 @@ export class EncounterState extends Phaser.State {
         this.encounterStateMenuManager.createBaseMenu(this.useSpecial(this), this.flee);
         this.encounterStateMenuManager.createAttacksMenu();
         this.encounterStateMenuManager.createItemPaginationButtons();
-        this.showNotification(this.notificationTextService.battleStartText(this.possibleEnemies));
         this.renderBattlefield();
+        this.showNotification(this.notificationTextService.battleStartText(this.possibleEnemies));
+        this.spacebar = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     }
 
     update() {
         this.playerGraphic.decrementHealthBarUntil(this.player.playerStats.getPercentHealthRemaining());
+        this.encounterStateMenuManager.update();
     }
 
 
@@ -115,7 +118,7 @@ export class EncounterState extends Phaser.State {
     }
 
     private showNotification(text: string) {
-        //TODO
+        this.encounterStateMenuManager.addNotification(text);
     }
 }
 

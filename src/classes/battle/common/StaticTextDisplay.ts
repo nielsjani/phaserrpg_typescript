@@ -1,14 +1,30 @@
-///<reference path="../../phaser_expansions/AbstractTextDisplay.ts"/>
-import {TextDisplay} from "../../items/TextDisplay";
 import {AbstractTextDisplay} from "../../phaser_expansions/AbstractTextDisplay";
 import {EncounterState} from "../../../states/encounterstate/EncounterState";
 export class StaticTextDisplay extends AbstractTextDisplay {
+    private background: Phaser.Graphics;
+    private spacebarAnimation: Phaser.Sprite;
     //https://phaser.io/examples/v2/text/display-text-word-by-word
 
-    constructor(public state: EncounterState, public x: number, public  y: number, public text: string) {
-        super(state.game, x, y, text, TextDisplay.getStyle());
-        this.setText(this.getFirstTextChunk(text));
-        // this.setTextBounds(state.camera.x  +25, state.camera.y + (state.camera.height - 150), 800, 100);
+    constructor(public state: EncounterState, public rectanglex: number, public  rectangley: number, public text: string, public textboxheight: number, public textboxwidth: number) {
+        super(state.game, rectanglex, rectangley, text, StaticTextDisplay.getStyle());
+        this.prefixTextWithHashTag();
+        this.setText(this.getFirstTextChunk(this.text));
+        this.setTextBounds(rectanglex, textboxheight, textboxwidth, textboxheight);
+
+        this.addBackground(rectanglex, textboxheight, textboxwidth);
+        this.addSpacebar();
+    }
+
+    private addBackground(rectanglex: number, textboxheight: number, textboxwidth: number) {
+        this.background = this.state.game.add.graphics(0, 0);
+        this.background.beginFill(0x008080, 1);
+        this.background.drawRect(rectanglex, textboxheight, textboxwidth, textboxheight);
+    }
+
+    private addSpacebar() {
+        this.spacebarAnimation = this.state.game.add.sprite(590, 550, "pressSpace",0);
+        this.spacebarAnimation.animations.add("blink");
+        this.spacebarAnimation.animations.play("blink", 1, true);
     }
 
     getStyle(): Phaser.PhaserTextStyle {
@@ -18,13 +34,26 @@ export class StaticTextDisplay extends AbstractTextDisplay {
     static getStyle() {
         return {
             align: "left",
-            font: 'bold 24pt Arial',
+            font: 'bold 36pt Arial',
             fill: 'white',
             wordWrap: true,
-            wordWrapWidth: 750,
-            backgroundColor: "blue",
-            boundsAlignH: "center",
-            boundsAlignV: "middle"
+            wordWrapWidth: 800,
+            backgroundColor: "#008080",
+            boundsAlignH: "left",
+            boundsAlignV: "center"
         };
+    }
+
+    private prefixTextWithHashTag() {
+        if (!this.text.startsWith("#")) {
+            this.text = "#" + this.text;
+        }
+        return this.text;
+    }
+
+    public destroy() {
+        this.background.destroy(true);
+        this.spacebarAnimation.destroy(true);
+        super.destroy();
     }
 }

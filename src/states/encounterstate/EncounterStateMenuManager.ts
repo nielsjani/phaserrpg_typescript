@@ -4,6 +4,7 @@
 import {ButtonBuilder} from "../../classes/phaser_expansions/ButtonBuilder";
 import {Constants} from "../../classes/util/Constants";
 import {EncounterState} from "./EncounterState";
+import {StaticTextDisplay} from "../../classes/battle/common/StaticTextDisplay";
 export class EncounterStateMenuManager {
     private encounterState: EncounterState;
     private mainMenu: Phaser.Button[];
@@ -15,6 +16,7 @@ export class EncounterStateMenuManager {
     private itemPaginationPreviousButton: Phaser.Button;
     private itemPaginationNextButton: Phaser.Button;
     private currentlyShownItems: Phaser.Button[] = [];
+    private notification: StaticTextDisplay;
 
     constructor(private state: EncounterState) {
         this.encounterState = state;
@@ -200,6 +202,29 @@ export class EncounterStateMenuManager {
             this.hideAttacks();
             this.destroyItemsMenu();
             specialButtonFunction();
+        }
+    }
+
+    addNotification(text: string) {
+        //    TODO: hide all other menus
+        this.notification = new StaticTextDisplay(this.encounterState, 0, 0, text, Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2), Constants.GAME_WIDTH);
+        this.encounterState.add.existing(this.notification);
+    }
+
+    update() {
+        if (this.encounterState.spacebar.justDown) {
+            if (this.notification) {
+                this.handleTextDisplayNextText();
+            }
+        }
+    }
+
+    private handleTextDisplayNextText() {
+        if (this.notification.hasMore()) {
+            this.notification.updateTextbox();
+        } else {
+            this.notification.destroy();
+            this.notification = undefined;
         }
     }
 }

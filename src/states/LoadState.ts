@@ -20,12 +20,12 @@ export class LoadState extends Phaser.State {
         this.load.image("encounter", "images/items/transparant.png");
 
         //encounter state
-        //this.load.spritesheet("button", "images/menus/button.png", 60, 40);
         this.load.spritesheet("button", "images/menus/buttonBig.png", 200, 100);
         this.load.spritesheet("paginationPrevious", "images/menus/paginationPrevious.png", 50, 50);
         this.load.spritesheet("paginationNext", "images/menus/paginationNext.png", 50, 50);
         this.load.spritesheet("player_backsprite", "images/encounter/player_backsprite.png", 200, 200);
         this.load.spritesheet("rat", "images/encounter/rat.png", 200, 200);
+        this.load.spritesheet("pressSpace", "images/menus/pressSpace.png", 200, 36, 2, 0,1);
     }
 
     create() {
