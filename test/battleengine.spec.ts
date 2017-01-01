@@ -3,11 +3,10 @@
 ///<reference path="../src/classes/battle/common/Stats.ts"/>
 ///<reference path="../src/states/encounterstate/EncounterState.ts"/>
 /// <reference path="./config/typings/jasmine.d.ts" />
-
 import {BattleEngine} from "../src/classes/battle/engine/BattleEngine";
-import {StatsBuilder, Stats} from "../src/classes/battle/common/Stats";
+import {StatsBuilder} from "../src/classes/battle/common/Stats";
 import {Enemy} from "../src/classes/battle/enemies/Enemy";
-import {EncounterState} from "../src/states/encounterstate/EncounterState";
+import {TestEnemy} from "./stubs/TestEnemy";
 
 describe('BattleEngine', () => {
 
@@ -53,31 +52,4 @@ describe('BattleEngine', () => {
 
 function enemyWithSpeed(speed: number) {
     return new TestEnemy().withStats(new StatsBuilder().stats().withSpeed(speed).build());
-}
-
-export class TestEnemy extends Enemy {
-
-    private name: string;
-
-    constructor() {
-        super(new StatsBuilder().stats().build(), "key");
-    }
-
-
-    performTurn(encounterState: EncounterState): void {
-    }
-
-    getName(): string {
-        return this.name;
-    }
-
-    withName(name: string) {
-        this.name = name;
-        return this;
-    }
-
-    withStats(stats: Stats){
-        super.setStats(stats);
-        return this;
-    }
 }

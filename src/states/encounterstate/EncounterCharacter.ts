@@ -38,10 +38,22 @@ export class EncounterCharacter {
             .build();
     }
 
+    changeHealthBarUntil(percentage: number) {
+        this.decrementHealthBarUntil(percentage);
+        this.incrementHealthBarUntil(percentage);
+    }
+
     decrementHealthBarUntil(percentage: number) {
         if (this.remainingHealthBarWidthTooBig(percentage)) {
             this.remainingHealthBar.width--;
             this.replaceByRedBarIfSizeLessThanOrEqualThanHalf();
+        }
+    }
+
+    private incrementHealthBarUntil(percentage: number) {
+        if (!this.remainingHealthBarWidthTooBig(percentage)) {
+            this.remainingHealthBar.width++;
+            this.replaceByGreenBarIfSizeMoreThanHalf();
         }
     }
 
@@ -63,6 +75,10 @@ export class EncounterCharacter {
 
     private barWidthLessThanOrEqualThanHalf() {
         return this.remainingHealthBar.width <= this.totalHealthBar.width / 2;
+    }
+
+    private replaceByGreenBarIfSizeMoreThanHalf() {
+        //TODO
     }
 }
 

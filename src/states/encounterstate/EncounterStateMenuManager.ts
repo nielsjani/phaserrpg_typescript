@@ -5,6 +5,10 @@ import {ButtonBuilder} from "../../classes/phaser_expansions/ButtonBuilder";
 import {Constants} from "../../classes/util/Constants";
 import {EncounterState} from "./EncounterState";
 import {StaticTextDisplay} from "../../classes/battle/common/StaticTextDisplay";
+import {BattleEngine} from "../../classes/battle/engine/BattleEngine";
+import {NotificationTextService} from "../../classes/battle/common/NotificationTextService";
+import {InventoryItem} from "../../classes/battle/player/inventory/InventoryItem";
+import {NotificationMessageWithCallback} from "../../classes/battle/common/NotificationMessageWithCallback";
 export class EncounterStateMenuManager {
     private encounterState: EncounterState;
     private mainMenu: Phaser.Button[];
@@ -18,11 +22,15 @@ export class EncounterStateMenuManager {
     private currentlyShownItems: Phaser.Button[] = [];
     private notification: StaticTextDisplay;
 
+    private battleEngine: BattleEngine;
+
+
     constructor(private state: EncounterState) {
         this.encounterState = state;
+        this.battleEngine = new BattleEngine(state);
     }
 
-    createBaseMenu(specialButtonFunction: any, fleeButtonFunction: any) {
+    createBaseMenu(specialButtonFunction: () => NotificationMessageWithCallback, fleeButtonFunction: any) {
         this.mainMenu = [
             ButtonBuilder.statefullButton()
                 .withText("Attack")
@@ -50,7 +58,7 @@ export class EncounterStateMenuManager {
                 .withX(Constants.ENCOUNTER_MENU_BUTTON_WIDTH)
                 .withY(Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT)
                 .withState(this.encounterState)
-                .withClickFunction(fleeButtonFunction)
+                .withClickFunction(this.useFlee(fleeButtonFunction))
                 .build()
         ];
     };
@@ -78,28 +86,28 @@ export class EncounterStateMenuManager {
                 .withX(Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 2)
                 .withY(Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2))
                 .withState(this.encounterState)
-                .withClickFunction(this.encounterState.player.attack(0))
+                .withClickFunction(this.performAttack(0))
                 .build(),
             ButtonBuilder.statefullButton()
                 .withText(this.determineAttackButtonText(1))
                 .withX(Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 3)
                 .withY(Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2))
                 .withState(this.encounterState)
-                .withClickFunction(this.encounterState.player.attack(1))
+                .withClickFunction(this.performAttack(1))
                 .build(),
             ButtonBuilder.statefullButton()
                 .withText(this.determineAttackButtonText(2))
                 .withX(Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 2)
                 .withY(Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT)
                 .withState(this.encounterState)
-                .withClickFunction(this.encounterState.player.attack(2))
+                .withClickFunction(this.performAttack(2))
                 .build(),
             ButtonBuilder.statefullButton()
                 .withText(this.determineAttackButtonText(3))
                 .withX(Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 3)
                 .withY(Constants.GAME_HEIGHT - Constants.ENCOUNTER_MENU_BUTTON_HEIGHT)
                 .withState(this.encounterState)
-                .withClickFunction(this.encounterState.player.attack(3))
+                .withClickFunction(this.performAttack(3))
                 .build()
         ];
 
@@ -175,40 +183,55 @@ export class EncounterStateMenuManager {
     }
 
     private createCurrentShownItems() {
+        //TODO: show amount of owned of itemtype (Eg: Potion x5)
         var start = this.currentItemsPage * 5;
         let itemsToShow = this.encounterState.getPlayerItems(start, start + this.numberOfItemsPerPage);
         for (let i = 0; i < itemsToShow.length; i++) {
             let createdButton =
                 ButtonBuilder.statefullButton()
-                    .withText(itemsToShow[i].name)
+                    .withText(itemsToShow[i].getName())
                     .withX(Constants.ENCOUNTER_MENU_BUTTON_WIDTH * 3)
                     .withY(i * Constants.ENCOUNTER_MENU_BUTTON_HEIGHT)
                     .withState(this.encounterState)
-                    .withClickFunction(this.useItem(itemsToShow[i]))
+                    .withClickFunction(this.useItem(itemsToShow[i], this.encounterState))
                     .build();
             this.currentlyShownItems.push(createdButton);
         }
     }
 
-    private useItem(item: any) {
-        //TODO: should call the 'use' method on the item object and remove it from the bag afterwards
-        return function () {
-            console.log("USED " + item.name);
+    private useItem(item: InventoryItem, encounterState: EncounterState) {
+        return () => {
+            console.log("USED " + item.getName());
+            this.hideMenus();
+            let notificationMessageWithCallback = encounterState.getPlayer().useItem(item, encounterState);
+            this.addNotificationWithCallback(notificationMessageWithCallback.message, () => {
+                notificationMessageWithCallback.callback();
+               this.battleEngine.startBattlePhaseWithout(this.encounterState.player);
+            });
+            //TODO: notification + start battle phase (like special)
+            //TODO: disable item button if inventory empty?
         }
     }
 
-    private useSpecial(specialButtonFunction: any) {
+    private useSpecial(specialButtonFunction: () => NotificationMessageWithCallback) {
         return () => {
-            this.hideAttacks();
-            this.destroyItemsMenu();
-            specialButtonFunction();
+            this.hideMenus();
+            let spBFunction = specialButtonFunction();
+            this.addNotificationWithCallback(spBFunction.message, () => {
+                spBFunction.callback();
+                this.battleEngine.startBattlePhaseWithout(this.encounterState.player);
+            });
         }
     }
 
     addNotification(text: string) {
-        //    TODO: hide all other menus
-        this.notification = new StaticTextDisplay(this.encounterState, 0, 0, text, Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2), Constants.GAME_WIDTH);
+        this.addNotificationWithCallback(text, undefined);
+    }
+
+    addNotificationWithCallback(text: string, callback: any) {
+        this.notification = new StaticTextDisplay(this.encounterState, 0, 0, text, Constants.GAME_HEIGHT - (Constants.ENCOUNTER_MENU_BUTTON_HEIGHT * 2), Constants.GAME_WIDTH, callback);
         this.encounterState.add.existing(this.notification);
+        this.hideMenus();
     }
 
     update() {
@@ -223,8 +246,50 @@ export class EncounterStateMenuManager {
         if (this.notification.hasMore()) {
             this.notification.updateTextbox();
         } else {
+            if (this.notification.hasCallback()) {
+                this.notification.performCallback();
+            }
             this.notification.destroy();
             this.notification = undefined;
+
+            if (this.battleEngine.isBattlePhaseInProgress()) {
+                this.battleEngine.nextAttack();
+            } else {
+                this.showMainMenu();
+            }
+        }
+    }
+
+    private hideMenus() {
+        this.hideMainMenu();
+        this.hideAttacks();
+        this.destroyItemsMenu();
+    }
+
+    private hideMainMenu() {
+        this.mainMenu.forEach(mainMenuButton => mainMenuButton.visible = false);
+    }
+
+    private showMainMenu() {
+        this.mainMenu.forEach(mainMenuButton => mainMenuButton.visible = true);
+    }
+
+    private performAttack(attackIndex: number) {
+        return () => {
+            //TODO: player decides on target for attack after selecting attack.
+            let playerTurnCallback = () => {
+                let playerAttacksText = new NotificationTextService().playerAttacksText(this.encounterState.player.attacks[attackIndex].name, this.encounterState.getEnemies()[0]);
+                this.addNotificationWithCallback(playerAttacksText, this.encounterState.playerAttackCallback(attackIndex, 0));
+            };
+
+            this.battleEngine.startBattlePhase(playerTurnCallback);
+        }
+    }
+
+    private useFlee(fleeButtonFunction: ()=>any) {
+        //TODO: fleeing can fail sometimes?
+        return () => {
+            this.addNotificationWithCallback("You fled the battle", fleeButtonFunction);
         }
     }
 }

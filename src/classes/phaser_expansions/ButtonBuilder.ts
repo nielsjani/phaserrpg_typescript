@@ -77,6 +77,7 @@ export class ButtonBuilder {
     }
 
     withClickFunction(value: any) {
+        //TODO: this with should already wrap the 'value' in an anonymous function so its callers dont have to do it every time
         this.clickFunction = value;
         return this;
     }

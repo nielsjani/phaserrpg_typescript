@@ -21,7 +21,10 @@ export class Rat extends Enemy {
     }
 
     public performTurn(encounterState: EncounterState): void {
-        //TODO: implement me
+        let callback = () => {
+            encounterState.getPlayerStats().damage(10);
+        };
+        encounterState.showNotificationWithCallback("The rat bit you!", callback);
     };
 
     public getName(): string {

@@ -1,9 +1,9 @@
 ///<reference path="../src/classes/battle/common/NotificationTextService.ts"/>
 ///<reference path="../src/classes/battle/enemies/Enemy.ts"/>
 
-import {TestEnemy} from "./battleengine.spec";
 import {Enemy} from "../src/classes/battle/enemies/Enemy";
 import {NotificationTextService} from "../src/classes/battle/common/NotificationTextService";
+import {TestEnemy} from "./stubs/TestEnemy";
 describe('NotificationTextService', () => {
     describe("battleStartText", () => {
 
@@ -25,4 +25,11 @@ describe('NotificationTextService', () => {
             expect(battleStartText).toEqual("You were attacked by 2 Isaac and one John");
         });
     });
+
+    describe("playerAttacksText", () => {
+        it('Correct text', () => {
+            let battleStartText = new NotificationTextService().playerAttacksText("Tettekelek", new TestEnemy().withName("John"));
+            expect(battleStartText).toEqual("You attacked John with Tettekelek");
+        });
+    })
 });

@@ -33,4 +33,8 @@ export class NotificationTextService {
         }
         return " " + numberOfEnemiesWithName + " " + enemyName;
     }
+
+    playerAttacksText(attackName: string, targetEnemy: Enemy) {
+        return `You attacked ${targetEnemy.getName()} with ${attackName}`;
+    }
 }

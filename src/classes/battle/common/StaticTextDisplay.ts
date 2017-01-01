@@ -5,13 +5,14 @@ export class StaticTextDisplay extends AbstractTextDisplay {
     private spacebarAnimation: Phaser.Sprite;
     //https://phaser.io/examples/v2/text/display-text-word-by-word
 
-    constructor(public state: EncounterState, public rectanglex: number, public  rectangley: number, public text: string, public textboxheight: number, public textboxwidth: number) {
+    constructor(public state: EncounterState, public rectanglex: number, public  rectangley: number, public text: string, public textboxheight: number, public textboxwidth: number, private callback: any) {
         super(state.game, rectanglex, rectangley, text, StaticTextDisplay.getStyle());
         this.prefixTextWithHashTag();
         this.setText(this.getFirstTextChunk(this.text));
         this.setTextBounds(rectanglex, textboxheight, textboxwidth, textboxheight);
 
         this.addBackground(rectanglex, textboxheight, textboxwidth);
+        //TODO: Spacebar is hidden if text is too long.
         this.addSpacebar();
     }
 
@@ -22,7 +23,7 @@ export class StaticTextDisplay extends AbstractTextDisplay {
     }
 
     private addSpacebar() {
-        this.spacebarAnimation = this.state.game.add.sprite(590, 550, "pressSpace",0);
+        this.spacebarAnimation = this.state.game.add.sprite(590, 550, "pressSpace", 0);
         this.spacebarAnimation.animations.add("blink");
         this.spacebarAnimation.animations.play("blink", 1, true);
     }
@@ -55,5 +56,15 @@ export class StaticTextDisplay extends AbstractTextDisplay {
         this.background.destroy(true);
         this.spacebarAnimation.destroy(true);
         super.destroy();
+    }
+
+    public performCallback() {
+        if (this.callback) {
+            return this.callback();
+        }
+    }
+
+    public hasCallback(): boolean {
+        return this.callback;
     }
 }

@@ -23,6 +23,22 @@ export class Stats {
     getPercentHealthRemaining(): number {
         return (this.currenthealth / this.maxhealth) * 100;
     }
+
+    heal(amount: number) {
+        if(this.currenthealth + amount >= this.maxhealth) {
+            this.currenthealth = this.maxhealth;
+        } else {
+            this.currenthealth+=amount;
+        }
+    }
+
+    damage(amount: number) {
+        if(this.currenthealth - amount <= 0) {
+            this.currenthealth = 0;
+        } else {
+            this.currenthealth-=amount;
+        }
+    }
 }
 
 export class StatsBuilder {

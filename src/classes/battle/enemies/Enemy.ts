@@ -33,4 +33,9 @@ export abstract class Enemy implements BattleParticipant {
     }
 
     public abstract getName(): string;
+
+    processAttacked(power: number) {
+        let actualDamage = power - this.stats.defense;
+        this.stats.currenthealth-=actualDamage;
+    }
 }
